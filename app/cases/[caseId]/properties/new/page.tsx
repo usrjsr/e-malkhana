@@ -1,17 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 import { UploadButton } from "@/utils/uploadthing"
 
-type Props = {
-  params: {
-    caseId: string
-  }
-}
-
-export default function NewPropertyPage({ params }: Props) {
+export default function NewPropertyPage() {
   const router = useRouter()
+  const params = useParams()
+  const caseId = params.caseId as string
 
   const [form, setForm] = useState({
     category: "",
@@ -42,7 +38,7 @@ export default function NewPropertyPage({ params }: Props) {
       },
       body: JSON.stringify({
         ...form,
-        caseId: params.caseId,
+        caseId,
         imageUrl
       })
     })
@@ -53,7 +49,7 @@ export default function NewPropertyPage({ params }: Props) {
     }
 
     const data = await res.json()
-    router.push(`/cases/${params.caseId}/properties/${data.propertyId}`)
+    router.push(`/cases/${caseId}/properties/${data.propertyId}`)
   }
 
   return (
@@ -63,13 +59,12 @@ export default function NewPropertyPage({ params }: Props) {
       <UploadButton
         endpoint="propertyImage"
         onClientUploadComplete={(res: { url: string }[]) => {
-            setImageUrl(res[0].url)
+          setImageUrl(res[0].url)
         }}
         onUploadError={() => {
-            setError("Image upload failed")
+          setError("Image upload failed")
         }}
-        />
-
+      />
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
         <input

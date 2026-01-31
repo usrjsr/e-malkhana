@@ -5,20 +5,22 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 
 type Props = {
-  params: {
+  params: Promise<{
     caseId: string
-  }
+  }>
 }
 
 export default async function CaseDetailPage({ params }: Props) {
+  const { caseId } = await params
+
   await dbConnect()
 
-  const caseData = await Case.findById(params.caseId)
+  const caseData = await Case.findById(caseId)
   if (!caseData) {
     notFound()
   }
 
-  const properties = await Property.find({ caseId: params.caseId })
+  const properties = await Property.find({ caseId })
 
   return (
     <div className="p-6 space-y-6">
@@ -40,7 +42,7 @@ export default async function CaseDetailPage({ params }: Props) {
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Properties</h2>
         <Link
-          href={`/cases/${params.caseId}/properties/new`}
+          href={`/cases/${caseId}/properties/new`}
           className="bg-black text-white px-4 py-2 rounded"
         >
           Add Property
@@ -55,7 +57,7 @@ export default async function CaseDetailPage({ params }: Props) {
         {properties.map((property: any) => (
           <Link
             key={property._id}
-            href={`/cases/${params.caseId}/properties/${property._id}`}
+            href={`/cases/${caseId}/properties/${property._id}`}
             className="border rounded p-4 hover:bg-gray-50"
           >
             <p className="font-semibold">{property.category}</p>
