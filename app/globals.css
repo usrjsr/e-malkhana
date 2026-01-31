@@ -24,3 +24,70 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Print Styles */
+@media print {
+  /* Hide elements that shouldn't print */
+  header,
+  footer,
+  button,
+  .no-print,
+  [data-no-print="true"] {
+    display: none !important;
+  }
+
+  /* Page styles */
+  body {
+    background: white;
+    color: black;
+    font-size: 12px;
+  }
+
+  main {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Print-specific layout */
+  .print-section {
+    page-break-inside: avoid;
+    margin-bottom: 20px;
+  }
+
+  .print-section-title {
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #1e3a8a;
+    color: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    page-break-after: avoid;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  table th {
+    background-color: #1e3a8a;
+    color: white;
+    padding: 8px;
+    text-align: left;
+    font-weight: bold;
+    border: 1px solid #ccc;
+  }
+
+  table td {
+    padding: 8px;
+    border: 1px solid #ccc;
+  }
+
+  table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+}
