@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@uploadthing/react": "^7.3.3",
     "bcryptjs": "^3.0.3",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.5",
@@ -22,6 +23,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
