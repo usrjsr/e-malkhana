@@ -2,18 +2,18 @@ import { NextRequest, NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import dbConnect from "@/lib/db"
 import User from "@/models/User"
-import { verifyToken } from "@/lib/auth"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 export async function POST(req: NextRequest) {
   await dbConnect()
 
-  const token = req.cookies.get("token")?.value
-  if (!token) {
+  const session = await getServerSession(authOptions)
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const payload = verifyToken(token)
-  if (payload.role !== "ADMIN") {
+  if ((session.user as any)?.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 

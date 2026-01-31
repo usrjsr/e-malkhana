@@ -2,15 +2,15 @@ import { NextRequest, NextResponse } from "next/server"
 import dbConnect from "@/lib/db"
 import CustodyLog from "@/models/CustodyLog"
 import Property from "@/models/Property"
-import { verifyToken } from "@/lib/auth"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 export async function POST(req: NextRequest) {
   await dbConnect()
 
-  const token = req.cookies.get("token")?.value
-  const payload = token ? verifyToken(token) : null
+  const session = await getServerSession(authOptions)
 
-  if (!payload) {
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
@@ -58,10 +58,9 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   await dbConnect()
 
-  const token = req.cookies.get("token")?.value
-  const payload = token ? verifyToken(token) : null
+  const session = await getServerSession(authOptions)
 
-  if (!payload) {
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 

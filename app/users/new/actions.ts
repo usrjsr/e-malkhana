@@ -2,8 +2,8 @@
 
 import dbConnect from "@/lib/db"
 import User from "@/models/User"
-import { verifyToken } from "@/lib/auth"
-import { cookies } from "next/headers"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import bcrypt from "bcryptjs"
 
 export async function createUser(formData: {
@@ -13,13 +13,13 @@ export async function createUser(formData: {
   officerId: string
   policeStation: string
 }) {
-  const token = (await cookies()).get("token")?.value
-  if (!token) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session) {
     throw new Error("Unauthorized")
   }
 
-  const payload = verifyToken(token)
-  if (payload.role !== "ADMIN") {
+  if ((session.user as any)?.role !== "ADMIN") {
     throw new Error("Only admins can create users")
   }
 

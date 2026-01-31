@@ -2,24 +2,39 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { loginUser } from "@/app/(auth)/login/actions"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
+
 
 export default function LoginForm() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-
+  const router = useRouter()
+  
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError("")
     setIsLoading(true)
 
     try {
-      await loginUser({ username, password })
-      // Server action will handle redirect to dashboard
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Invalid username or password")
+      const result = await signIn("credentials", {
+        username,
+        password,
+        redirect: false
+      })
+
+      if (result?.error) {
+        setError("Invalid username or password")
+        setIsLoading(false)
+        return
+      }
+
+      router.replace("/dashboard")
+      router.refresh()
+    } catch {
+      setError("Something went wrong")
       setIsLoading(false)
     }
   }

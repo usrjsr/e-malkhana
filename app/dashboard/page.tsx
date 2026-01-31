@@ -1,16 +1,15 @@
 import dbConnect from "@/lib/db"
 import Case from "@/models/Case"
 import Link from "next/link"
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { verifyToken } from "@/lib/auth"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import ManageCasesClient from "@/app/cases/manage/manage-cases-client"
 
 export default async function DashboardPage() {
-  const token = (await cookies()).get("token")?.value
-  const payload = token ? verifyToken(token) : null
+  const session = await getServerSession(authOptions)
 
-  if (!payload) {
+  if (!session) {
     redirect("/login")
   }
 
@@ -38,7 +37,7 @@ export default async function DashboardPage() {
           </div>
 
           <div className="flex gap-3">
-            {payload.role === "ADMIN" && (
+            {(session.user as any)?.role === "ADMIN" && (
               <Link
                 href="/users/new"
                 className="bg-white border-2 border-[#1e3a8a] text-[#1e3a8a] px-6 py-2 font-semibold hover:bg-[#f8f9fa] transition-colors"

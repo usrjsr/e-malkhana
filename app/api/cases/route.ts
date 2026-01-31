@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
 import dbConnect from "@/lib/db"
 import Case from "@/models/Case"
-import { verifyToken } from "@/lib/auth"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 export async function POST(req: NextRequest) {
-  await dbConnect()
-
-  const token = req.cookies.get("token")?.value
-  if (!token) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const payload = verifyToken(token)
+  await dbConnect()
+
   const body = await req.json()
 
   const {
@@ -58,14 +59,13 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  await dbConnect()
-
-  const token = req.cookies.get("token")?.value
-  if (!token) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  verifyToken(token)
+  await dbConnect()
 
   const cases = await Case.find().sort({ createdAt: -1 })
   return NextResponse.json(cases)

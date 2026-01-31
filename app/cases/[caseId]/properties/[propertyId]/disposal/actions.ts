@@ -3,8 +3,8 @@
 import dbConnect from "@/lib/db"
 import Property from "@/models/Property"
 import Disposal from "@/models/Disposal"
-import { verifyToken } from "@/lib/auth"
-import { cookies } from "next/headers"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 export async function disposeProperty(formData: {
   propertyId: string
@@ -13,12 +13,10 @@ export async function disposeProperty(formData: {
   disposalDate: string
   remarks: string
 }) {
-  const token = (await cookies()).get("token")?.value
-  if (!token) {
+  const session = await getServerSession(authOptions)
+  if (!session) {
     throw new Error("Unauthorized")
   }
-
-  verifyToken(token)
   await dbConnect()
 
   const disposal = new Disposal({

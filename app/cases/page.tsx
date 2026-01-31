@@ -1,15 +1,14 @@
 import dbConnect from "@/lib/db"
 import Case from "@/models/Case"
 import Link from "next/link"
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { verifyToken } from "@/lib/auth"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 export default async function CasesPage() {
-  const token = (await cookies()).get("token")?.value
-  const payload = token ? verifyToken(token) : null
+  const session = await getServerSession(authOptions)
 
-  if (!payload) {
+  if (!session) {
     redirect("/login")
   }
 

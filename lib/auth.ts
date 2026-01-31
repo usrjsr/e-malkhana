@@ -1,23 +1,67 @@
-import jwt from "jsonwebtoken"
+import { NextAuthOptions } from "next-auth"
+import CredentialsProvider from "next-auth/providers/credentials"
+import bcrypt from "bcryptjs"
+import dbConnect from "./db"
+import User from "@/models/User"
 
-const JWT_SECRET = process.env.JWT_SECRET as string
+export const authOptions: NextAuthOptions = {
+  providers: [
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        username: { label: "Username", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.username || !credentials?.password) {
+          throw new Error("Invalid credentials")
+        }
 
-if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET not defined")
-}
+        await dbConnect()
 
-type TokenPayload = {
-  userId: string
-  role: "ADMIN" | "USER"
-  officerId: string
-}
+        const user = await User.findOne({ username: credentials.username })
+        if (!user) {
+          throw new Error("Invalid credentials")
+        }
 
-export function signToken(payload: TokenPayload) {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: "7d"
-  })
-}
+        const isValid = await bcrypt.compare(
+          credentials.password,
+          user.passwordHash
+        )
+        if (!isValid) {
+          throw new Error("Invalid credentials")
+        }
 
-export function verifyToken(token: string) {
-  return jwt.verify(token, JWT_SECRET) as TokenPayload
+        return {
+          id: user._id.toString(),
+          name: user.username,
+          email: user.officerId,
+          role: user.role,
+        }
+      },
+    }),
+  ],
+  pages: {
+    signIn: "/login",
+  },
+  session: {
+    strategy: "jwt",
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+        token.role = (user as any).role
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string
+        ;(session.user as any).role = token.role
+      }
+      return session
+    },
+  },
+  secret: process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET,
 }

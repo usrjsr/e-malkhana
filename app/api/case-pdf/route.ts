@@ -2,16 +2,15 @@ import { NextRequest, NextResponse } from "next/server"
 import dbConnect from "@/lib/db"
 import Case from "@/models/Case"
 import Property from "@/models/Property"
-import { verifyToken } from "@/lib/auth"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 export async function GET(req: NextRequest) {
   try {
-    const token = req.cookies.get("token")?.value
-    if (!token) {
+    const session = await getServerSession(authOptions)
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-
-    verifyToken(token)
 
     await dbConnect()
 

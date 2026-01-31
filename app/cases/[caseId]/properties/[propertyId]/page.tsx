@@ -2,9 +2,9 @@ import dbConnect from "@/lib/db"
 import Property from "@/models/Property"
 import Case from "@/models/Case"
 import Link from "next/link"
-import { cookies } from "next/headers"
 import { redirect, notFound } from "next/navigation"
-import { verifyToken } from "@/lib/auth"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 type Props = {
   params: Promise<{
@@ -14,10 +14,9 @@ type Props = {
 }
 
 export default async function PropertyDetailPage({ params }: Props) {
-  const token = (await cookies()).get("token")?.value
-  const payload = token ? verifyToken(token) : null
+  const session = await getServerSession(authOptions)
 
-  if (!payload) {
+  if (!session) {
     redirect("/login")
   }
 
@@ -190,7 +189,7 @@ export default async function PropertyDetailPage({ params }: Props) {
             </div>
           </Link>
 
-          {payload.role === "ADMIN" && property.status !== "DISPOSED" && (
+          {(session.user as any)?.role === "ADMIN" && property.status !== "DISPOSED" && (
             <Link
               href={`/cases/${caseId}/properties/${propertyId}/disposal`}
               className="bg-white border-2 border-[#dc3545] p-6 hover:bg-[#fff5f5] transition-colors group"

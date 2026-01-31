@@ -2,8 +2,8 @@
 
 import dbConnect from "@/lib/db"
 import Case from "@/models/Case"
-import { verifyToken } from "@/lib/auth"
-import { cookies } from "next/headers"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 export async function createCase(formData: {
   policeStationName: string
@@ -16,12 +16,10 @@ export async function createCase(formData: {
   actAndLaw: string
   sections: string
 }) {
-  const token = (await cookies()).get("token")?.value
-  if (!token) {
+  const session = await getServerSession(authOptions)
+  if (!session) {
     throw new Error("Unauthorized")
   }
-
-  verifyToken(token)
   await dbConnect()
 
   const newCase = new Case({

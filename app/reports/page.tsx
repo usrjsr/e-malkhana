@@ -2,16 +2,15 @@ import dbConnect from "@/lib/db"
 import Case from "@/models/Case"
 import Property from "@/models/Property"
 import Link from "next/link"
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { verifyToken } from "@/lib/auth"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import ReportPrintClient from "./report-print-client"
 
 export default async function ReportsPage() {
-  const token = (await cookies()).get("token")?.value
-  const payload = token ? verifyToken(token) : null
+  const session = await getServerSession(authOptions)
 
-  if (!payload) {
+  if (!session) {
     redirect("/login")
   }
 

@@ -3,15 +3,15 @@ import dbConnect from "@/lib/db"
 import Disposal from "@/models/Disposal"
 import Property from "@/models/Property"
 import Case from "@/models/Case"
-import { verifyToken } from "@/lib/auth"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 export async function POST(req: NextRequest) {
   await dbConnect()
 
-  const token = req.cookies.get("token")?.value
-  const payload = token ? verifyToken(token) : null
+  const session = await getServerSession(authOptions)
 
-  if (!payload || payload.role !== "ADMIN") {
+  if (!session || (session.user as any)?.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 

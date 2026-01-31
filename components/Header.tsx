@@ -1,12 +1,22 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import LogoutButton from "./LogoutButton"
+import { usePathname, useRouter } from "next/navigation"
+import { useSession, signOut } from "next-auth/react"
+import { useState } from "react"
 
 export default function Header() {
   const pathname = usePathname()
+  const router = useRouter()
+  const { data: session } = useSession()
+  const [isLoading, setIsLoading] = useState(false)
   const isDashboard = pathname.includes("/dashboard") || pathname.includes("/cases") || pathname.includes("/properties") || pathname.includes("/reports") || pathname.includes("/alerts")
+
+  const handleLogout = async () => {
+    setIsLoading(true)
+    await signOut({ redirect: false })
+    router.push("/login")
+  }
 
   return (
     <header className="bg-[#1e3a8a] text-white">
@@ -24,14 +34,21 @@ export default function Header() {
             </div>
           </Link>
           
-          {isDashboard && (
+          {isDashboard && session && (
             <div className="flex items-center gap-6">
               <div className="flex items-center text-sm text-gray-200">
-                <Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
-                <span className="mx-2">/</span>
-                <span className="text-blue-300">{pathname.split("/")[1]}</span>
+                <span>Welcome, {session.user?.name}</span>
+                {(session.user as any)?.role === "ADMIN" && (
+                  <span className="ml-2 px-2 py-1 bg-yellow-500 text-yellow-900 rounded text-xs font-bold">ADMIN</span>
+                )}
               </div>
-              <LogoutButton />
+              <button
+                onClick={handleLogout}
+                disabled={isLoading}
+                className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-4 py-2 rounded font-semibold transition-colors"
+              >
+                {isLoading ? "Logging out..." : "Logout"}
+              </button>
             </div>
           )}
         </div>

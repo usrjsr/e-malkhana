@@ -170,7 +170,7 @@ export default function ManageCasesClient() {
                     </div>
 
                     <svg 
-                      className={`w-6 h-6 text-gray-400 flex-shrink-0 transition-transform ${expandedCaseId === c._id ? 'rotate-180' : ''}`} 
+                      className={`w-6 h-6 text-gray-400 shrink-0 transition-transform ${expandedCaseId === c._id ? 'rotate-180' : ''}`} 
                       fill="none" 
                       stroke="currentColor" 
                       viewBox="0 0 24 24"
