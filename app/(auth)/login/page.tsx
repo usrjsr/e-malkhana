@@ -1,10 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
-  const router = useRouter()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -15,6 +13,7 @@ export default function LoginPage() {
 
     const res = await fetch("/api/auth/login", {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json"
       },
@@ -26,7 +25,7 @@ export default function LoginPage() {
       return
     }
 
-    router.push("/dashboard")
+    window.location.href = "/dashboard"
   }
 
   return (
