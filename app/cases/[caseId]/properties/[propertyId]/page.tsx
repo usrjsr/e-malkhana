@@ -2,87 +2,285 @@ import dbConnect from "@/lib/db"
 import Property from "@/models/Property"
 import Case from "@/models/Case"
 import Link from "next/link"
-import { notFound } from "next/navigation"
+import { cookies } from "next/headers"
+import { redirect, notFound } from "next/navigation"
+import { verifyToken } from "@/lib/auth"
 
 type Props = {
-  params: {
+  params: Promise<{
     caseId: string
     propertyId: string
-  }
+  }>
 }
 
 export default async function PropertyDetailPage({ params }: Props) {
+  const token = (await cookies()).get("token")?.value
+  const payload = token ? verifyToken(token) : null
+
+  if (!payload) {
+    redirect("/login")
+  }
+
+  const { caseId, propertyId } = await params
+
   await dbConnect()
 
-  const property = await Property.findById(params.propertyId)
+  const property = await Property.findById(propertyId)
   if (!property) {
     notFound()
   }
 
-  const caseData = await Case.findById(params.caseId)
+  const caseData = await Case.findById(caseId)
   if (!caseData) {
     notFound()
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Property Details</h1>
-        <p className="text-sm text-gray-600">
-          Case {caseData.crimeNumber}/{caseData.crimeYear}
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <p><strong>Category:</strong> {property.category}</p>
-          <p><strong>Belonging To:</strong> {property.belongingTo}</p>
-          <p><strong>Nature:</strong> {property.nature}</p>
-          <p><strong>Quantity:</strong> {property.quantity}</p>
-          <p><strong>Location:</strong> {property.location}</p>
-          <p><strong>Status:</strong> {property.status}</p>
-          <p><strong>Description:</strong> {property.description}</p>
-        </div>
-
-        <div className="space-y-4">
-          <img
-            src={property.imageUrl}
-            alt="Property"
-            className="border rounded max-h-64 object-cover"
-          />
-
-          <div className="border p-4 rounded text-center space-y-2">
-            <p className="font-semibold">QR Code</p>
-            <img
-              src={property.qrCodeData}
-              alt="QR Code"
-              className="mx-auto"
-            />
-            <Link
-              href={`/properties/${property._id}/qr`}
-              className="text-blue-600 underline text-sm"
-            >
-              Open Printable QR
-            </Link>
+    <div className="min-h-screen bg-white">
+      <header className="bg-[#1e3a8a] text-white">
+        <div className="px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-[#1e3a8a] rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-xl">EP</span>
+                </div>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">e-Malkhana</h1>
+                <p className="text-sm text-blue-200">Digital Evidence Management System</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-blue-300">Role: {payload.role}</p>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="flex gap-4">
-        <Link
-          href={`/cases/${params.caseId}/properties/${params.propertyId}/custody`}
-          className="bg-black text-white px-4 py-2 rounded"
-        >
-          Chain of Custody
-        </Link>
+      <div className="bg-[#ff9933] h-2"></div>
+      <div className="bg-white h-2"></div>
+      <div className="bg-[#138808] h-2"></div>
 
-        <Link
-          href={`/cases/${params.caseId}/properties/${params.propertyId}/disposal`}
-          className="border px-4 py-2 rounded"
-        >
-          Disposal
-        </Link>
-      </div>
+      <main className="px-4 py-8">
+        <div className="mb-6 flex items-start justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-[#1e3a8a]">Property Details</h2>
+            <p className="text-gray-600 mt-1">
+              Case {caseData.crimeNumber}/{caseData.crimeYear} - {caseData.policeStationName}
+            </p>
+            <div className="mt-2">
+              <span className={`px-3 py-1 text-sm font-semibold ${
+                property.status === "PENDING" 
+                  ? "bg-[#ffc107] text-[#856404]" 
+                  : "bg-[#28a745] text-white"
+              }`}>
+                {property.status}
+              </span>
+            </div>
+          </div>
+
+          <Link
+            href={`/cases/${caseId}`}
+            className="bg-white border-2 border-[#1e3a8a] text-[#1e3a8a] px-6 py-2 font-semibold hover:bg-[#f8f9fa] transition-colors"
+          >
+            ← Back to Case
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="lg:col-span-2 bg-white border-2 border-gray-300">
+            <div className="bg-[#1e3a8a] text-white px-6 py-4">
+              <h3 className="text-xl font-bold">Property Information</h3>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
+                  <p className="text-sm font-semibold text-gray-600 mb-1">Category</p>
+                  <p className="text-lg font-bold text-[#1e3a8a]">{property.category}</p>
+                </div>
+
+                <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
+                  <p className="text-sm font-semibold text-gray-600 mb-1">Belonging To</p>
+                  <p className="text-lg font-bold text-[#1e3a8a]">{property.belongingTo}</p>
+                </div>
+
+                <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
+                  <p className="text-sm font-semibold text-gray-600 mb-1">Nature of Property</p>
+                  <p className="text-lg font-bold text-[#1e3a8a]">{property.nature}</p>
+                </div>
+
+                <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
+                  <p className="text-sm font-semibold text-gray-600 mb-1">Quantity</p>
+                  <p className="text-lg font-bold text-[#1e3a8a]">
+                    {property.quantity} {property.unit || 'units'}
+                  </p>
+                </div>
+
+                <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
+                  <p className="text-sm font-semibold text-gray-600 mb-1">Storage Location</p>
+                  <p className="text-lg font-bold text-[#1e3a8a]">{property.location}</p>
+                </div>
+
+                <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
+                  <p className="text-sm font-semibold text-gray-600 mb-1">Current Status</p>
+                  <p className={`text-lg font-bold ${
+                    property.status === "PENDING" ? "text-[#ffc107]" : "text-[#28a745]"
+                  }`}>
+                    {property.status}
+                  </p>
+                </div>
+              </div>
+
+              {property.description && (
+                <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
+                  <p className="text-sm font-semibold text-gray-600 mb-2">Description</p>
+                  <p className="text-gray-900">{property.description}</p>
+                </div>
+              )}
+
+              {property.seizureDate && (
+                <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
+                  <p className="text-sm font-semibold text-gray-600 mb-1">Date of Seizure</p>
+                  <p className="text-gray-900">
+                    {new Date(property.seizureDate).toLocaleDateString('en-IN')}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {property.imageUrl && (
+              <div className="bg-white border-2 border-gray-300">
+                <div className="bg-[#1e3a8a] text-white px-6 py-4">
+                  <h3 className="text-xl font-bold">Property Image</h3>
+                </div>
+                <div className="p-4">
+                  <img
+                    src={property.imageUrl}
+                    alt="Property"
+                    className="w-full border-2 border-gray-300 object-cover max-h-64"
+                  />
+                </div>
+              </div>
+            )}
+
+            {property.qrCodeData && (
+              <div className="bg-white border-2 border-gray-300">
+                <div className="bg-[#1e3a8a] text-white px-6 py-4">
+                  <h3 className="text-xl font-bold">QR Code</h3>
+                </div>
+                <div className="p-6 text-center space-y-4">
+                  <img
+                    src={property.qrCodeData}
+                    alt="QR Code"
+                    className="mx-auto border-2 border-gray-300 p-2 bg-white"
+                  />
+                  <Link
+                    href={`/properties/${property._id}/qr`}
+                    className="inline-block bg-[#1e3a8a] text-white px-4 py-2 font-semibold hover:bg-[#1e40af] transition-colors"
+                  >
+                    Print QR Code
+                  </Link>
+                  <p className="text-xs text-gray-500">
+                    Scan to view property details
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <Link
+            href={`/cases/${caseId}/properties/${propertyId}/custody`}
+            className="bg-white border-2 border-[#1e3a8a] p-6 hover:bg-[#f8f9fa] transition-colors group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-[#1e3a8a] rounded-full flex items-center justify-center group-hover:bg-[#1e40af] transition-colors">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-[#1e3a8a]">Chain of Custody</h3>
+                  <p className="text-sm text-gray-600">View movement history</p>
+                </div>
+              </div>
+              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
+
+          {payload.role === "ADMIN" && property.status !== "DISPOSED" && (
+            <Link
+              href={`/cases/${caseId}/properties/${propertyId}/disposal`}
+              className="bg-white border-2 border-[#dc3545] p-6 hover:bg-[#fff5f5] transition-colors group"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-[#dc3545] rounded-full flex items-center justify-center group-hover:bg-[#c82333] transition-colors">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-[#dc3545]">Property Disposal</h3>
+                    <p className="text-sm text-gray-600">Mark as disposed</p>
+                  </div>
+                </div>
+                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
+          )}
+        </div>
+
+        {property.status === "DISPOSED" && (
+          <div className="bg-[#d4edda] border-l-4 border-[#28a745] p-4">
+            <div className="flex items-start">
+              <svg className="w-6 h-6 text-[#155724] mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <div>
+                <h4 className="font-bold text-[#155724] mb-1">Property Disposed</h4>
+                <p className="text-sm text-[#155724]">
+                  This property has been disposed as per court orders or department procedures.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {property.status === "PENDING" && (
+          <div className="bg-[#fff3cd] border-l-4 border-[#ffc107] p-4">
+            <div className="flex items-start">
+              <svg className="w-6 h-6 text-[#856404] mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <div>
+                <h4 className="font-bold text-[#856404] mb-1">Under Custody</h4>
+                <p className="text-sm text-[#856404]">
+                  This property is currently under police custody. Ensure proper chain of custody is maintained for all movements.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+
+      <footer className="bg-[#1e3a8a] text-white mt-16">
+        <div className="px-4 py-6">
+          <div className="text-center text-sm text-blue-200">
+            <p>© 2025 Government of India. All rights reserved.</p>
+            <p className="mt-2">e-Malkhana - Digital Evidence Management System</p>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

@@ -5,14 +5,7 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { verifyToken } from "@/lib/auth"
 
-type Props = {
-  searchParams?: {
-    q?: string
-    status?: string
-  }
-}
-
-export default async function DashboardPage({ searchParams }: Props) {
+export default async function CasesPage() {
   const token = (await cookies()).get("token")?.value
   const payload = token ? verifyToken(token) : null
 
@@ -22,43 +15,16 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   await dbConnect()
 
-  const totalCases = await Case.countDocuments({})
-  const pendingCases = await Case.countDocuments({ status: "PENDING" })
-  const disposedCases = await Case.countDocuments({ status: "DISPOSED" })
+  const cases = await Case.find().sort({ createdAt: -1 })
 
-  const threshold = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-
-  const alertCases = await Case.countDocuments({
-    status: "PENDING",
-    createdAt: { $lt: threshold }
-  })
-
-  const query = searchParams?.q?.trim()
-  const statusFilter = searchParams?.status
-
-  let filter: any = {}
-
-  if (query) {
-    filter.$or = [
-      { crimeNumber: { $regex: query, $options: "i" } },
-      { crimeYear: Number(query) || -1 },
-      { policeStationName: { $regex: query, $options: "i" } },
-      { investigatingOfficerName: { $regex: query, $options: "i" } }
-    ]
-  }
-
-  if (statusFilter && statusFilter !== "ALL") {
-    filter.status = statusFilter
-  }
-
-  const cases = await Case.find(filter)
-    .sort({ createdAt: -1 })
-    .limit(query || statusFilter ? 20 : 5)
+  const totalCases = cases.length
+  const pendingCases = cases.filter((c: any) => c.status === "PENDING").length
+  const disposedCases = cases.filter((c: any) => c.status === "DISPOSED").length
 
   return (
     <div className="min-h-screen bg-white">
       <header className="bg-[#1e3a8a] text-white">
-        <div className="container mx-auto px-4 py-6">
+        <div className="px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
@@ -83,12 +49,14 @@ export default async function DashboardPage({ searchParams }: Props) {
       <div className="bg-[#138808] h-2"></div>
 
       <div className="bg-[#f8f9fa] border-b border-gray-300">
-        <div className="container mx-auto px-4 py-3">
+        <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center text-sm text-gray-600">
               <Link href="/" className="hover:text-[#1e3a8a]">Home</Link>
               <span className="mx-2">/</span>
-              <span className="text-[#1e3a8a] font-semibold">Dashboard</span>
+              <Link href="/dashboard" className="hover:text-[#1e3a8a]">Dashboard</Link>
+              <span className="mx-2">/</span>
+              <span className="text-[#1e3a8a] font-semibold">All Cases</span>
             </div>
             <form action="/api/auth/logout" method="POST">
               <button
@@ -102,23 +70,20 @@ export default async function DashboardPage({ searchParams }: Props) {
         </div>
       </div>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
+      <main className="px-4 py-8">
+        <div className="mb-8 flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-[#1e3a8a]">Dashboard Overview</h2>
-            <p className="text-gray-600 mt-1">Evidence and Case Management</p>
+            <h2 className="text-3xl font-bold text-[#1e3a8a]">All Cases</h2>
+            <p className="text-gray-600 mt-1">Complete case registry and management</p>
           </div>
 
           <div className="flex gap-3">
-            {payload.role === "ADMIN" && (
-              <Link
-                href="/users/new"
-                className="bg-white border-2 border-[#1e3a8a] text-[#1e3a8a] px-6 py-2 font-semibold hover:bg-[#f8f9fa] transition-colors"
-              >
-                + Add User
-              </Link>
-            )}
-
+            <Link
+              href="/dashboard"
+              className="bg-white border-2 border-[#1e3a8a] text-[#1e3a8a] px-6 py-2 font-semibold hover:bg-[#f8f9fa] transition-colors"
+            >
+              ← Dashboard
+            </Link>
             <Link
               href="/cases/new"
               className="bg-[#1e3a8a] text-white px-6 py-2 font-semibold hover:bg-[#1e40af] transition-colors border-2 border-[#1e3a8a]"
@@ -128,7 +93,7 @@ export default async function DashboardPage({ searchParams }: Props) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white border-2 border-[#1e3a8a] p-6">
             <div className="flex items-center justify-between mb-3">
               <div className="w-12 h-12 bg-[#1e3a8a] rounded-full flex items-center justify-center">
@@ -167,99 +132,12 @@ export default async function DashboardPage({ searchParams }: Props) {
             <p className="text-4xl font-bold text-[#28a745]">{disposedCases}</p>
             <p className="text-xs text-gray-500 mt-2">Completed cases</p>
           </div>
-
-          <Link
-            href="/alerts"
-            className="bg-white border-2 border-[#dc3545] p-6 hover:bg-[#fff5f5] transition-colors"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-12 h-12 bg-[#dc3545] rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <p className="text-sm font-semibold text-gray-600 uppercase">Alerts</p>
-            </div>
-            <p className="text-4xl font-bold text-[#dc3545]">{alertCases}</p>
-            <p className="text-xs text-gray-500 mt-2">Pending over 7 days</p>
-          </Link>
-        </div>
-
-        {alertCases > 0 && (
-          <div className="mb-8 bg-[#fff3cd] border-l-4 border-[#ffc107] p-4">
-            <div className="flex items-start">
-              <svg className="w-6 h-6 text-[#856404] mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-              <div>
-                <h4 className="font-bold text-[#856404] mb-1">Attention Required</h4>
-                <p className="text-sm text-[#856404]">
-                  You have {alertCases} case(s) pending for more than 7 days. Please review and take necessary action.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="bg-white border-2 border-gray-300 p-6 mb-8">
-          <h3 className="text-lg font-bold text-[#1e3a8a] mb-4">Search & Filter Cases</h3>
-          
-          <form className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Search Query
-                </label>
-                <input
-                  name="q"
-                  type="text"
-                  placeholder="Crime number, year, station, or officer name"
-                  defaultValue={query}
-                  className="w-full border-2 border-gray-300 px-4 py-2 focus:outline-none focus:border-[#1e3a8a]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Filter by Status
-                </label>
-                <select
-                  name="status"
-                  defaultValue={statusFilter || "ALL"}
-                  className="w-full border-2 border-gray-300 px-4 py-2 focus:outline-none focus:border-[#1e3a8a]"
-                >
-                  <option value="ALL">All Cases</option>
-                  <option value="PENDING">Pending Only</option>
-                  <option value="DISPOSED">Disposed Only</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                className="bg-[#1e3a8a] text-white px-6 py-2 font-semibold hover:bg-[#1e40af] transition-colors"
-              >
-                Search
-              </button>
-              <Link
-                href="/dashboard"
-                className="bg-gray-200 text-gray-700 px-6 py-2 font-semibold hover:bg-gray-300 transition-colors"
-              >
-                Clear Filters
-              </Link>
-            </div>
-          </form>
         </div>
 
         <div className="bg-white border-2 border-gray-300">
           <div className="bg-[#1e3a8a] text-white px-6 py-4">
-            <h3 className="text-xl font-bold">
-              {query || statusFilter ? "Search Results" : "Recent Cases"}
-            </h3>
-            <p className="text-sm text-blue-200 mt-1">
-              {cases.length} case(s) found
-            </p>
+            <h3 className="text-xl font-bold">Case Registry</h3>
+            <p className="text-sm text-blue-200 mt-1">{totalCases} cases found</p>
           </div>
 
           {cases.length === 0 ? (
@@ -267,8 +145,14 @@ export default async function DashboardPage({ searchParams }: Props) {
               <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <p className="text-gray-600 font-semibold">No cases found</p>
-              <p className="text-sm text-gray-500 mt-2">Try adjusting your search or filter criteria</p>
+              <p className="text-gray-600 font-semibold mb-2">No cases found</p>
+              <p className="text-sm text-gray-500 mb-4">Start by creating your first case</p>
+              <Link
+                href="/cases/new"
+                className="inline-block bg-[#1e3a8a] text-white px-6 py-2 font-semibold hover:bg-[#1e40af] transition-colors"
+              >
+                + Create New Case
+              </Link>
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
@@ -293,7 +177,7 @@ export default async function DashboardPage({ searchParams }: Props) {
                         </span>
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm text-gray-600">
                         <div className="flex items-center gap-2">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -301,12 +185,12 @@ export default async function DashboardPage({ searchParams }: Props) {
                           <span>{c.policeStationName}</span>
                         </div>
                         
-                        {c.investigatingOfficerName && (
+                        {c.investigatingOfficer?.name && (
                           <div className="flex items-center gap-2">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
-                            <span>IO: {c.investigatingOfficerName}</span>
+                            <span>IO: {c.investigatingOfficer.name}</span>
                           </div>
                         )}
                         
@@ -318,6 +202,15 @@ export default async function DashboardPage({ searchParams }: Props) {
                             <span>FIR: {new Date(c.dateOfFIR).toLocaleDateString('en-IN')}</span>
                           </div>
                         )}
+
+                        {c.actAndLaw && (
+                          <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            <span>{c.actAndLaw}</span>
+                          </div>
+                        )}
                         
                         {c.properties && c.properties.length > 0 && (
                           <div className="flex items-center gap-2">
@@ -327,10 +220,17 @@ export default async function DashboardPage({ searchParams }: Props) {
                             <span>{c.properties.length} Properties</span>
                           </div>
                         )}
+
+                        <div className="flex items-center gap-2">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>Created: {new Date(c.createdAt).toLocaleDateString('en-IN')}</span>
+                        </div>
                       </div>
                     </div>
 
-                    <svg className="w-6 h-6 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6 text-gray-400 flex-shrink-0 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </div>
@@ -340,18 +240,26 @@ export default async function DashboardPage({ searchParams }: Props) {
           )}
         </div>
 
-        <div className="mt-6 text-center">
-          <Link
-            href="/cases"
-            className="inline-block bg-white border-2 border-[#1e3a8a] text-[#1e3a8a] px-6 py-2 font-semibold hover:bg-[#f8f9fa] transition-colors"
-          >
-            View All Cases →
-          </Link>
-        </div>
+        {cases.length > 0 && (
+          <div className="mt-6 bg-[#e7f3ff] border-l-4 border-[#1e3a8a] p-4">
+            <div className="flex items-start">
+              <svg className="w-6 h-6 text-[#1e3a8a] mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <div>
+                <h4 className="font-bold text-[#1e3a8a] mb-1">Quick Actions</h4>
+                <p className="text-sm text-gray-700">
+                  Click on any case to view details, manage properties, track chain of custody, or dispose evidence.
+                  Use the search feature on the dashboard to quickly find specific cases.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       <footer className="bg-[#1e3a8a] text-white mt-16">
-        <div className="container mx-auto px-4 py-6">
+        <div className="px-4 py-6">
           <div className="text-center text-sm text-blue-200">
             <p>© 2025 Government of India. All rights reserved.</p>
             <p className="mt-2">e-Malkhana - Digital Evidence Management System</p>

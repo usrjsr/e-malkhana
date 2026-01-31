@@ -1,29 +1,28 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 
-type Props = {
-  params: {
-    caseId: string
-    propertyId: string
-  }
-}
-
-export default function CustodyPage({ params }: Props) {
+export default function CustodyPage() {
   const router = useRouter()
+  const params = useParams()
+  const propertyId = params.propertyId as string
+
   const [logs, setLogs] = useState<any[]>([])
   const [form, setForm] = useState({
     from: "",
     to: "",
-    purpose: "",
+    purpose: "STORAGE",
     remarks: "",
     timestamp: ""
   })
   const [error, setError] = useState("")
 
   async function fetchLogs() {
-    const res = await fetch(`/api/custody?propertyId=${params.propertyId}`)
+    const res = await fetch(`/api/custody?propertyId=${propertyId}`, {
+      credentials: "include"
+    })
+
     if (res.ok) {
       const data = await res.json()
       setLogs(data)
@@ -31,11 +30,13 @@ export default function CustodyPage({ params }: Props) {
   }
 
   useEffect(() => {
-    fetchLogs()
-  }, [])
+    if (propertyId) {
+      fetchLogs()
+    }
+  }, [propertyId])
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
@@ -46,12 +47,13 @@ export default function CustodyPage({ params }: Props) {
 
     const res = await fetch("/api/custody", {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
         ...form,
-        propertyId: params.propertyId
+        propertyId
       })
     })
 
@@ -63,7 +65,7 @@ export default function CustodyPage({ params }: Props) {
     setForm({
       from: "",
       to: "",
-      purpose: "",
+      purpose: "STORAGE",
       remarks: "",
       timestamp: ""
     })
@@ -94,14 +96,19 @@ export default function CustodyPage({ params }: Props) {
           required
         />
 
-        <input
+        <select
           name="purpose"
-          placeholder="Purpose"
           value={form.purpose}
           onChange={handleChange}
           className="border p-2 rounded"
           required
-        />
+        >
+          <option value="STORAGE">Storage</option>
+          <option value="COURT">Court</option>
+          <option value="FSL">FSL</option>
+          <option value="ANALYSIS">Analysis</option>
+          <option value="TRANSFER">Transfer</option>
+        </select>
 
         <input
           name="remarks"

@@ -9,16 +9,11 @@ export async function POST(req: NextRequest) {
   await dbConnect()
 
   const token = req.cookies.get("token")?.value
-  if (!token) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const payload = token ? verifyToken(token) : null
 
-  const payload = verifyToken(token)
-  if (payload.role !== "ADMIN") {
+  if (!payload || payload.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
-
-  const body = await req.json()
 
   const {
     propertyId,
@@ -26,7 +21,16 @@ export async function POST(req: NextRequest) {
     courtOrderReference,
     disposalDate,
     remarks
-  } = body
+  } = await req.json()
+
+  console.log({
+  propertyId,
+  disposalType,
+  courtOrderReference,
+  disposalDate,
+  remarks
+})
+
 
   if (
     !propertyId ||
@@ -38,6 +42,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid data" }, { status: 400 })
   }
 
+  const parsedDate = new Date(disposalDate)
+  if (isNaN(parsedDate.getTime())) {
+    return NextResponse.json({ error: "Invalid disposal date" }, { status: 400 })
+  }
+
   const property = await Property.findById(propertyId)
   if (!property || property.status === "DISPOSED") {
     return NextResponse.json({ error: "Invalid property" }, { status: 400 })
@@ -47,7 +56,7 @@ export async function POST(req: NextRequest) {
     propertyId,
     disposalType,
     courtOrderReference,
-    disposalDate,
+    disposalDate: parsedDate,
     remarks
   })
 
@@ -60,9 +69,7 @@ export async function POST(req: NextRequest) {
   })
 
   if (remaining === 0) {
-    await Case.findByIdAndUpdate(property.caseId, {
-      status: "DISPOSED"
-    })
+    await Case.findByIdAndUpdate(property.caseId, { status: "DISPOSED" })
   }
 
   return NextResponse.json({ success: true })

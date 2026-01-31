@@ -1,17 +1,20 @@
 import dbConnect from "@/lib/db"
 import Property from "@/models/Property"
 import { notFound } from "next/navigation"
+import QRPrintClient from "./qr-print-client"
 
 type Props = {
-  params: {
+  params: Promise<{
     propertyId: string
-  }
+  }>
 }
 
 export default async function PropertyQRPage({ params }: Props) {
   await dbConnect()
 
-  const property = await Property.findById(params.propertyId)
+  const { propertyId } = await params
+
+  const property = await Property.findById(propertyId)
   if (!property) {
     notFound()
   }
@@ -33,12 +36,7 @@ export default async function PropertyQRPage({ params }: Props) {
         <p><strong>Status:</strong> {property.status}</p>
       </div>
 
-      <button
-        onClick={() => globalThis.print()}
-        className="border px-4 py-2 rounded"
-      >
-        Print
-      </button>
+      <QRPrintClient />
     </div>
   )
 }
