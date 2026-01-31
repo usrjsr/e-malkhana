@@ -4,15 +4,9 @@ import Link from "next/link"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { verifyToken } from "@/lib/auth"
+import ManageCasesClient from "@/app/cases/manage/manage-cases-client"
 
-type Props = {
-  searchParams?: {
-    q?: string
-    status?: string
-  }
-}
-
-export default async function DashboardPage({ searchParams }: Props) {
+export default async function DashboardPage() {
   const token = (await cookies()).get("token")?.value
   const payload = token ? verifyToken(token) : null
 
@@ -33,76 +27,10 @@ export default async function DashboardPage({ searchParams }: Props) {
     createdAt: { $lt: threshold }
   })
 
-  const query = searchParams?.q?.trim()
-  const statusFilter = searchParams?.status
-
-  let filter: any = {}
-
-  if (query) {
-    filter.$or = [
-      { crimeNumber: { $regex: query, $options: "i" } },
-      { crimeYear: Number(query) || -1 },
-      { policeStationName: { $regex: query, $options: "i" } },
-      { investigatingOfficerName: { $regex: query, $options: "i" } }
-    ]
-  }
-
-  if (statusFilter && statusFilter !== "ALL") {
-    filter.status = statusFilter
-  }
-
-  const cases = await Case.find(filter)
-    .sort({ createdAt: -1 })
-    .limit(query || statusFilter ? 20 : 5)
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="bg-[#1e3a8a] text-white">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-                <div className="w-12 h-12 bg-[#1e3a8a] rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">EP</span>
-                </div>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">e-Malkhana</h1>
-                <p className="text-sm text-blue-200">Digital Evidence Management System</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-blue-300">Role: {payload.role}</p>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="bg-[#ff9933] h-2"></div>
-      <div className="bg-white h-2"></div>
-      <div className="bg-[#138808] h-2"></div>
-
-      <div className="bg-[#f8f9fa] border-b border-gray-300">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center text-sm text-gray-600">
-              <Link href="/" className="hover:text-[#1e3a8a]">Home</Link>
-              <span className="mx-2">/</span>
-              <span className="text-[#1e3a8a] font-semibold">Dashboard</span>
-            </div>
-            <form action="/api/auth/logout" method="POST">
-              <button
-                type="submit"
-                className="text-sm text-red-600 hover:text-red-700 font-semibold"
-              >
-                Logout →
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <main className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-3xl font-bold text-[#1e3a8a]">Dashboard Overview</h2>
@@ -202,162 +130,12 @@ export default async function DashboardPage({ searchParams }: Props) {
         )}
 
         <div className="bg-white border-2 border-gray-300 p-6 mb-8">
-          <h3 className="text-lg font-bold text-[#1e3a8a] mb-4">Search & Filter Cases</h3>
+          <h3 className="text-lg font-bold text-[#1e3a8a] mb-4">Manage Entries</h3>
+          <p className="text-gray-600 mb-6">Search cases, view details, associated properties, and download case reports</p>
           
-          <form className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Search Query
-                </label>
-                <input
-                  name="q"
-                  type="text"
-                  placeholder="Crime number, year, station, or officer name"
-                  defaultValue={query}
-                  className="w-full border-2 border-gray-300 px-4 py-2 focus:outline-none focus:border-[#1e3a8a]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Filter by Status
-                </label>
-                <select
-                  name="status"
-                  defaultValue={statusFilter || "ALL"}
-                  className="w-full border-2 border-gray-300 px-4 py-2 focus:outline-none focus:border-[#1e3a8a]"
-                >
-                  <option value="ALL">All Cases</option>
-                  <option value="PENDING">Pending Only</option>
-                  <option value="DISPOSED">Disposed Only</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                className="bg-[#1e3a8a] text-white px-6 py-2 font-semibold hover:bg-[#1e40af] transition-colors"
-              >
-                Search
-              </button>
-              <Link
-                href="/dashboard"
-                className="bg-gray-200 text-gray-700 px-6 py-2 font-semibold hover:bg-gray-300 transition-colors"
-              >
-                Clear Filters
-              </Link>
-            </div>
-          </form>
+          <ManageCasesClient />
         </div>
-
-        <div className="bg-white border-2 border-gray-300">
-          <div className="bg-[#1e3a8a] text-white px-6 py-4">
-            <h3 className="text-xl font-bold">
-              {query || statusFilter ? "Search Results" : "Recent Cases"}
-            </h3>
-            <p className="text-sm text-blue-200 mt-1">
-              {cases.length} case(s) found
-            </p>
-          </div>
-
-          {cases.length === 0 ? (
-            <div className="p-12 text-center">
-              <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <p className="text-gray-600 font-semibold">No cases found</p>
-              <p className="text-sm text-gray-500 mt-2">Try adjusting your search or filter criteria</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-200">
-              {cases.map((c: any) => (
-                <Link
-                  key={c._id}
-                  href={`/cases/${c._id}`}
-                  className="block p-6 hover:bg-[#f8f9fa] transition-colors"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h4 className="text-lg font-bold text-[#1e3a8a]">
-                          Crime {c.crimeNumber}/{c.crimeYear}
-                        </h4>
-                        <span className={`px-3 py-1 text-xs font-semibold ${
-                          c.status === "PENDING" 
-                            ? "bg-[#ffc107] text-[#856404]" 
-                            : "bg-[#28a745] text-white"
-                        }`}>
-                          {c.status}
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                          </svg>
-                          <span>{c.policeStationName}</span>
-                        </div>
-                        
-                        {c.investigatingOfficerName && (
-                          <div className="flex items-center gap-2">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            <span>IO: {c.investigatingOfficerName}</span>
-                          </div>
-                        )}
-                        
-                        {c.dateOfFIR && (
-                          <div className="flex items-center gap-2">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <span>FIR: {new Date(c.dateOfFIR).toLocaleDateString('en-IN')}</span>
-                          </div>
-                        )}
-                        
-                        {c.properties && c.properties.length > 0 && (
-                          <div className="flex items-center gap-2">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                            </svg>
-                            <span>{c.properties.length} Properties</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <svg className="w-6 h-6 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="mt-6 text-center">
-          <Link
-            href="/cases"
-            className="inline-block bg-white border-2 border-[#1e3a8a] text-[#1e3a8a] px-6 py-2 font-semibold hover:bg-[#f8f9fa] transition-colors"
-          >
-            View All Cases →
-          </Link>
-        </div>
-      </main>
-
-      <footer className="bg-[#1e3a8a] text-white mt-16">
-        <div className="container mx-auto px-4 py-6">
-          <div className="text-center text-sm text-blue-200">
-            <p>© 2025 Government of India. All rights reserved.</p>
-            <p className="mt-2">e-Malkhana - Digital Evidence Management System</p>
-          </div>
-        </div>
-      </footer>
+      </div>
     </div>
   )
 }
