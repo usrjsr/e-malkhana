@@ -5,7 +5,6 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { verifyToken } from "@/lib/auth"
 
-
 export default async function AlertsPage() {
   const token = (await cookies()).get("token")?.value
   const payload = token ? verifyToken(token) : null
@@ -31,32 +30,7 @@ export default async function AlertsPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="bg-[#1e3a8a] text-white">
-        <div className="px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-                <div className="w-12 h-12 bg-[#1e3a8a] rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">EP</span>
-                </div>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">e-Malkhana</h1>
-                <p className="text-sm text-blue-200">Digital Evidence Management System</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-blue-200">Government of India</p>
-              <p className="text-xs text-blue-300">Ministry of Home Affairs</p>
-            </div>
-          </div>
-        </div>
-      </header>
-      <div className="bg-[#ff9933] h-2"></div>
-      <div className="bg-white h-2"></div>
-      <div className="bg-[#138808] h-2"></div>
-
-      <main className="px-4 py-8">
+      <div className="px-4 py-8">
         <div className="mb-8 flex items-start justify-between">
           <div>
             <h2 className="text-3xl font-bold text-[#dc3545]">Long Pending Cases</h2>
@@ -269,16 +243,7 @@ export default async function AlertsPage() {
             </div>
           </div>
         </div>
-      </main>
-
-      <footer className="bg-[#1e3a8a] text-white mt-16">
-        <div className="px-4 py-6">
-          <div className="text-center text-sm text-blue-200">
-            <p>© 2025 Government of India. All rights reserved.</p>
-            <p className="mt-2">e-Malkhana - Digital Evidence Management System</p>
-          </div>
-        </div>
-      </footer>
+      </div>
     </div>
   )
 }

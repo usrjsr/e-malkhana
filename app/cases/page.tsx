@@ -23,54 +23,7 @@ export default async function CasesPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="bg-[#1e3a8a] text-white">
-        <div className="px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-                <div className="w-12 h-12 bg-[#1e3a8a] rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">EP</span>
-                </div>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">e-Malkhana</h1>
-                <p className="text-sm text-blue-200">Digital Evidence Management System</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-blue-300">Role: {payload.role}</p>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="bg-[#ff9933] h-2"></div>
-      <div className="bg-white h-2"></div>
-      <div className="bg-[#138808] h-2"></div>
-
-      <div className="bg-[#f8f9fa] border-b border-gray-300">
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center text-sm text-gray-600">
-              <Link href="/" className="hover:text-[#1e3a8a]">Home</Link>
-              <span className="mx-2">/</span>
-              <Link href="/dashboard" className="hover:text-[#1e3a8a]">Dashboard</Link>
-              <span className="mx-2">/</span>
-              <span className="text-[#1e3a8a] font-semibold">All Cases</span>
-            </div>
-            <form action="/api/auth/logout" method="POST">
-              <button
-                type="submit"
-                className="text-sm text-red-600 hover:text-red-700 font-semibold"
-              >
-                Logout →
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <main className="px-4 py-8">
+      <div className="px-4 py-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold text-[#1e3a8a]">All Cases</h2>
@@ -256,16 +209,9 @@ export default async function CasesPage() {
             </div>
           </div>
         )}
-      </main>
+      </div>
 
-      <footer className="bg-[#1e3a8a] text-white mt-16">
-        <div className="px-4 py-6">
-          <div className="text-center text-sm text-blue-200">
-            <p>© 2025 Government of India. All rights reserved.</p>
-            <p className="mt-2">e-Malkhana - Digital Evidence Management System</p>
-          </div>
-        </div>
-      </footer>
+    
     </div>
   )
 }

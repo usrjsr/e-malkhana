@@ -37,32 +37,7 @@ export default async function PropertyDetailPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="bg-[#1e3a8a] text-white">
-        <div className="px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-                <div className="w-12 h-12 bg-[#1e3a8a] rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">EP</span>
-                </div>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">e-Malkhana</h1>
-                <p className="text-sm text-blue-200">Digital Evidence Management System</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-blue-300">Role: {payload.role}</p>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="bg-[#ff9933] h-2"></div>
-      <div className="bg-white h-2"></div>
-      <div className="bg-[#138808] h-2"></div>
-
-      <main className="px-4 py-8">
+      <div className="px-4 py-8">
         <div className="mb-6 flex items-start justify-between">
           <div>
             <h2 className="text-3xl font-bold text-[#1e3a8a]">Property Details</h2>
@@ -192,7 +167,7 @@ export default async function PropertyDetailPage({ params }: Props) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8" data-no-print="true">
           <Link
             href={`/cases/${caseId}/properties/${propertyId}/custody`}
             className="bg-white border-2 border-[#1e3a8a] p-6 hover:bg-[#f8f9fa] transition-colors group"
@@ -271,16 +246,7 @@ export default async function PropertyDetailPage({ params }: Props) {
             </div>
           </div>
         )}
-      </main>
-
-      <footer className="bg-[#1e3a8a] text-white mt-16">
-        <div className="px-4 py-6">
-          <div className="text-center text-sm text-blue-200">
-            <p>© 2025 Government of India. All rights reserved.</p>
-            <p className="mt-2">e-Malkhana - Digital Evidence Management System</p>
-          </div>
-        </div>
-      </footer>
+      </div>
     </div>
   )
 }

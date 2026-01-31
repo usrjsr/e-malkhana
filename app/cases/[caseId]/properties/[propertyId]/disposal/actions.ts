@@ -1,0 +1,38 @@
+"use server"
+
+import dbConnect from "@/lib/db"
+import Property from "@/models/Property"
+import Disposal from "@/models/Disposal"
+import { verifyToken } from "@/lib/auth"
+import { cookies } from "next/headers"
+
+export async function disposeProperty(formData: {
+  propertyId: string
+  disposalType: string
+  courtOrderReference: string
+  disposalDate: string
+  remarks: string
+}) {
+  const token = (await cookies()).get("token")?.value
+  if (!token) {
+    throw new Error("Unauthorized")
+  }
+
+  verifyToken(token)
+  await dbConnect()
+
+  const disposal = new Disposal({
+    propertyId: formData.propertyId,
+    disposalType: formData.disposalType,
+    courtOrderReference: formData.courtOrderReference,
+    disposalDate: new Date(formData.disposalDate),
+    remarks: formData.remarks,
+    disposedAt: new Date()
+  })
+
+  await disposal.save()
+
+  await Property.findByIdAndUpdate(formData.propertyId, { status: "DISPOSED" })
+
+  return { success: true }
+}

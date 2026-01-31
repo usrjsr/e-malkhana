@@ -48,54 +48,7 @@ export default async function CaseDetailPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="bg-[#1e3a8a] text-white">
-        <div className="px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-                <div className="w-12 h-12 bg-[#1e3a8a] rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">EP</span>
-                </div>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">e-Malkhana</h1>
-                <p className="text-sm text-blue-200">Digital Evidence Management System</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-blue-300">Role: {payload.role}</p>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="bg-[#ff9933] h-2"></div>
-      <div className="bg-white h-2"></div>
-      <div className="bg-[#138808] h-2"></div>
-
-      <div className="bg-[#f8f9fa] border-b border-gray-300">
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center text-sm text-gray-600">
-              <Link href="/" className="hover:text-[#1e3a8a]">Home</Link>
-              <span className="mx-2">/</span>
-              <Link href="/dashboard" className="hover:text-[#1e3a8a]">Dashboard</Link>
-              <span className="mx-2">/</span>
-              <span className="text-[#1e3a8a] font-semibold">Case Details</span>
-            </div>
-            <form action="/api/auth/logout" method="POST">
-              <button
-                type="submit"
-                className="text-sm text-red-600 hover:text-red-700 font-semibold"
-              >
-                Logout →
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <main className="px-4 py-8">
+      <div className="px-4 py-8">
         <div className="mb-6 flex items-start justify-between">
           <div>
             <h2 className="text-3xl font-bold text-[#1e3a8a]">
@@ -113,7 +66,7 @@ export default async function CaseDetailPage({ params }: Props) {
             </div>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3" data-no-print="true">
             <CasePrintClient />
             <Link
               href="/dashboard"
@@ -125,8 +78,8 @@ export default async function CaseDetailPage({ params }: Props) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="lg:col-span-2 bg-white border-2 border-gray-300">
-            <div className="bg-[#1e3a8a] text-white px-6 py-4">
+          <div className="lg:col-span-2 bg-white border-2 border-gray-300 print-section">
+            <div className="bg-[#1e3a8a] text-white px-6 py-4 print-section-title">
               <h3 className="text-xl font-bold">Case Information</h3>
             </div>
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -178,8 +131,8 @@ export default async function CaseDetailPage({ params }: Props) {
           </div>
         </div>
 
-        <div className="bg-white border-2 border-gray-300 mb-8">
-          <div className="bg-[#1e3a8a] text-white px-6 py-4 flex items-center justify-between">
+        <div className="bg-white border-2 border-gray-300 mb-8 print-section">
+          <div className="bg-[#1e3a8a] text-white px-6 py-4 print-section-title flex items-center justify-between">
             <div>
               <h3 className="text-xl font-bold">Seized Properties</h3>
               <p className="text-sm text-blue-200 mt-1">{properties.length} items in custody</p>
@@ -187,6 +140,7 @@ export default async function CaseDetailPage({ params }: Props) {
             <Link
               href={`/cases/${caseId}/properties/new`}
               className="bg-white text-[#1e3a8a] px-6 py-2 font-semibold hover:bg-blue-50 transition-colors"
+              data-no-print="true"
             >
               + Add Property
             </Link>
@@ -316,16 +270,7 @@ export default async function CaseDetailPage({ params }: Props) {
             </div>
           )}
         </div>
-      </main>
-
-      <footer className="bg-[#1e3a8a] text-white mt-16">
-        <div className="px-4 py-6">
-          <div className="text-center text-sm text-blue-200">
-            <p>© 2025 Government of India. All rights reserved.</p>
-            <p className="mt-2">e-Malkhana - Digital Evidence Management System</p>
-          </div>
-        </div>
-      </footer>
+      </div>
     </div>
   )
 }
