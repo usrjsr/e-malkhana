@@ -1,8 +1,8 @@
-import { NextAuthOptions } from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials"
-import bcrypt from "bcryptjs"
-import dbConnect from "./db"
-import User from "@/models/User"
+import { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import dbConnect from "./db";
+import User from "@/models/User";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -14,30 +14,33 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) {
-          throw new Error("Invalid credentials")
+          return null;
         }
 
-        await dbConnect()
+        await dbConnect();
 
-        const user = await User.findOne({ username: credentials.username })
-        if (!user) {
-          throw new Error("Invalid credentials")
-        }
+        const user = await User.findOne({
+          $or: [
+            { username: credentials.username },
+            { officerId: credentials.username },
+          ],
+        });
+
+        if (!user) return null;
 
         const isValid = await bcrypt.compare(
           credentials.password,
-          user.passwordHash
-        )
-        if (!isValid) {
-          throw new Error("Invalid credentials")
-        }
+          user.passwordHash,
+        );
+
+        if (!isValid) return null;
 
         return {
           id: user._id.toString(),
           name: user.username,
           email: user.officerId,
           role: user.role,
-        }
+        };
       },
     }),
   ],
@@ -50,18 +53,18 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id
-        token.role = (user as any).role
+        token.id = user.id;
+        token.role = (user as any).role;
       }
-      return token
+      return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string
-        ;(session.user as any).role = token.role
+        session.user.id = token.id as string;
+        (session.user as any).role = token.role;
       }
-      return session
+      return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET,
-}
+  secret: process.env.NEXTAUTH_SECRET,
+};

@@ -1,55 +1,43 @@
-import { NextRequest, NextResponse } from "next/server"
-import bcrypt from "bcryptjs"
-import dbConnect from "@/lib/db"
-import User from "@/models/User"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import dbConnect from "@/lib/db";
+import User from "@/models/User";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
-  await dbConnect()
+  await dbConnect();
 
-  const session = await getServerSession(authOptions)
+  const session = await getServerSession(authOptions);
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   if ((session.user as any)?.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const body = await req.json()
-  const {
-    username,
-    password,
-    role,
-    officerId,
-    policeStation
-  } = body
+  const body = await req.json();
+  const { username, password, role, officerId, policeStation } = body;
 
-  if (
-    !username ||
-    !password ||
-    !role ||
-    !officerId ||
-    !policeStation
-  ) {
-    return NextResponse.json({ error: "Invalid data" }, { status: 400 })
+  if (!username || !password || !role || !officerId || !policeStation) {
+    return NextResponse.json({ error: "Invalid data" }, { status: 400 });
   }
 
-  const existing = await User.findOne({ username })
+  const existing = await User.findOne({ username });
   if (existing) {
-    return NextResponse.json({ error: "User exists" }, { status: 409 })
+    return NextResponse.json({ error: "User exists" }, { status: 409 });
   }
 
-  const passwordHash = await bcrypt.hash(password, 10)
+  const passwordHash = await bcrypt.hash(password, 10);
 
   await User.create({
     username,
     passwordHash,
     role,
     officerId,
-    policeStation
-  })
+    policeStation,
+  });
 
-  return NextResponse.json({ success: true })
+  return NextResponse.json({ success: true });
 }

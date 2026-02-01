@@ -1,8 +1,8 @@
-import { createRouteHandler } from "uploadthing/next"
-import { uploadRouter } from "@/lib/uploadthing"
+import { createRouteHandler } from "uploadthing/next";
+import { uploadRouter } from "@/lib/uploadthing";
 
-export const runtime = "nodejs"
+export const runtime = "nodejs";
 
 export const { GET, POST } = createRouteHandler({
-  router: uploadRouter
-})
+  router: uploadRouter,
+});

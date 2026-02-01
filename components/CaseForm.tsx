@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { createCase } from "@/app/cases/new/actions"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createCase } from "@/app/cases/new/actions";
 
 export default function CaseForm() {
-  const router = useRouter()
+  const router = useRouter();
 
   const [form, setForm] = useState({
     policeStationName: "",
@@ -16,45 +16,49 @@ export default function CaseForm() {
     dateOfFIR: "",
     dateOfSeizure: "",
     actAndLaw: "",
-    sections: ""
-  })
+    sections: "",
+  });
 
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-    setForm({ ...form, [e.target.name]: e.target.value })
+  function handleChange(
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) {
+    setForm({ ...form, [e.target.name]: e.target.value });
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError("")
-    setIsLoading(true)
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     if (new Date(form.dateOfFIR) > new Date()) {
-      setError("Date of FIR cannot be in the future")
-      setIsLoading(false)
-      return
+      setError("Date of FIR cannot be in the future");
+      setIsLoading(false);
+      return;
     }
 
     if (new Date(form.dateOfSeizure) > new Date()) {
-      setError("Date of Seizure cannot be in the future")
-      setIsLoading(false)
-      return
+      setError("Date of Seizure cannot be in the future");
+      setIsLoading(false);
+      return;
     }
 
     if (new Date(form.dateOfSeizure) < new Date(form.dateOfFIR)) {
-      setError("Date of Seizure cannot be before Date of FIR")
-      setIsLoading(false)
-      return
+      setError("Date of Seizure cannot be before Date of FIR");
+      setIsLoading(false);
+      return;
     }
 
     try {
-      const result = await createCase(form)
-      router.replace(`/cases/${result.caseId}`)
+      const result = await createCase(form);
+      router.replace(`/cases/${result.caseId}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create case")
-      setIsLoading(false)
+      setError(err instanceof Error ? err.message : "Failed to create case");
+      setIsLoading(false);
     }
   }
 
@@ -62,16 +66,23 @@ export default function CaseForm() {
     <form onSubmit={handleSubmit} className="bg-white border-2 border-gray-300">
       <div className="bg-[#1e3a8a] text-white px-6 py-4">
         <h3 className="text-xl font-bold">Case Information Form</h3>
-        <p className="text-sm text-blue-200 mt-1">All fields marked with * are mandatory</p>
+        <p className="text-sm text-blue-200 mt-1">
+          All fields marked with * are mandatory
+        </p>
       </div>
 
       <div className="p-6 space-y-6">
         <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
-          <h4 className="font-bold text-[#1e3a8a] mb-4">Station & Officer Details</h4>
-          
+          <h4 className="font-bold text-[#1e3a8a] mb-4">
+            Station & Officer Details
+          </h4>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="policeStationName" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="policeStationName"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Police Station Name *
               </label>
               <input
@@ -88,7 +99,10 @@ export default function CaseForm() {
             </div>
 
             <div>
-              <label htmlFor="investigatingOfficerName" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="investigatingOfficerName"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Investigating Officer Name *
               </label>
               <input
@@ -105,7 +119,10 @@ export default function CaseForm() {
             </div>
 
             <div className="md:col-span-2">
-              <label htmlFor="investigatingOfficerId" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="investigatingOfficerId"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Investigating Officer ID *
               </label>
               <input
@@ -125,10 +142,13 @@ export default function CaseForm() {
 
         <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
           <h4 className="font-bold text-[#1e3a8a] mb-4">Crime Details</h4>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="crimeNumber" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="crimeNumber"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Crime Number *
               </label>
               <input
@@ -145,7 +165,10 @@ export default function CaseForm() {
             </div>
 
             <div>
-              <label htmlFor="crimeYear" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="crimeYear"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Crime Year *
               </label>
               <select
@@ -157,14 +180,22 @@ export default function CaseForm() {
                 required
                 disabled={isLoading}
               >
-                {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map(year => (
-                  <option key={year} value={year}>{year}</option>
+                {Array.from(
+                  { length: 10 },
+                  (_, i) => new Date().getFullYear() - i,
+                ).map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label htmlFor="dateOfFIR" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="dateOfFIR"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Date of FIR *
               </label>
               <input
@@ -173,7 +204,7 @@ export default function CaseForm() {
                 type="date"
                 value={form.dateOfFIR}
                 onChange={handleChange}
-                max={new Date().toISOString().split('T')[0]}
+                max={new Date().toISOString().split("T")[0]}
                 className="w-full border-2 border-gray-300 px-4 py-2 focus:outline-none focus:border-[#1e3a8a]"
                 required
                 disabled={isLoading}
@@ -181,7 +212,10 @@ export default function CaseForm() {
             </div>
 
             <div>
-              <label htmlFor="dateOfSeizure" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="dateOfSeizure"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Date of Seizure *
               </label>
               <input
@@ -190,7 +224,7 @@ export default function CaseForm() {
                 type="date"
                 value={form.dateOfSeizure}
                 onChange={handleChange}
-                max={new Date().toISOString().split('T')[0]}
+                max={new Date().toISOString().split("T")[0]}
                 className="w-full border-2 border-gray-300 px-4 py-2 focus:outline-none focus:border-[#1e3a8a]"
                 required
                 disabled={isLoading}
@@ -201,10 +235,13 @@ export default function CaseForm() {
 
         <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
           <h4 className="font-bold text-[#1e3a8a] mb-4">Legal Information</h4>
-          
+
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <label htmlFor="actAndLaw" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="actAndLaw"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Act & Law *
               </label>
               <input
@@ -221,7 +258,10 @@ export default function CaseForm() {
             </div>
 
             <div>
-              <label htmlFor="sections" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label
+                htmlFor="sections"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Sections of Law *
               </label>
               <textarea
@@ -242,8 +282,16 @@ export default function CaseForm() {
         {error && (
           <div className="bg-[#f8d7da] border-l-4 border-[#dc3545] p-4">
             <div className="flex items-start">
-              <svg className="w-5 h-5 text-[#721c24] mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              <svg
+                className="w-5 h-5 text-[#721c24] mr-2 flex-shrink-0 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
               </svg>
               <p className="text-sm text-[#721c24] font-semibold">{error}</p>
             </div>
@@ -252,13 +300,22 @@ export default function CaseForm() {
 
         <div className="bg-[#fff3cd] border-l-4 border-[#ffc107] p-4">
           <div className="flex items-start">
-            <svg className="w-6 h-6 text-[#856404] mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            <svg
+              className="w-6 h-6 text-[#856404] mr-3 flex-shrink-0"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clipRule="evenodd"
+              />
             </svg>
             <div>
               <h4 className="font-bold text-[#856404] mb-1">Next Steps</h4>
               <p className="text-sm text-[#856404]">
-                After creating the case, you will be able to add seized properties, track chain of custody, and manage case disposal.
+                After creating the case, you will be able to add seized
+                properties, track chain of custody, and manage case disposal.
               </p>
             </div>
           </div>
@@ -272,9 +329,25 @@ export default function CaseForm() {
           >
             {isLoading ? (
               <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Creating Case...
               </span>
@@ -293,5 +366,5 @@ export default function CaseForm() {
         </div>
       </div>
     </form>
-  )
+  );
 }

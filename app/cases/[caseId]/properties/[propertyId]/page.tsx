@@ -44,11 +44,10 @@ export default async function PropertyDetailPage({ params }: Props) {
               Case {caseData.crimeNumber}/{caseData.crimeYear} - {caseData.policeStationName}
             </p>
             <div className="mt-2">
-              <span className={`px-3 py-1 text-sm font-semibold ${
-                property.status === "PENDING" 
-                  ? "bg-[#ffc107] text-[#856404]" 
+              <span className={`px-3 py-1 text-sm font-semibold ${property.status === "PENDING"
+                  ? "bg-[#ffc107] text-[#856404]"
                   : "bg-[#28a745] text-white"
-              }`}>
+                }`}>
                 {property.status}
               </span>
             </div>
@@ -98,9 +97,8 @@ export default async function PropertyDetailPage({ params }: Props) {
 
                 <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
                   <p className="text-sm font-semibold text-gray-600 mb-1">Current Status</p>
-                  <p className={`text-lg font-bold ${
-                    property.status === "PENDING" ? "text-[#ffc107]" : "text-[#28a745]"
-                  }`}>
+                  <p className={`text-lg font-bold ${property.status === "PENDING" ? "text-[#ffc107]" : "text-[#28a745]"
+                    }`}>
                     {property.status}
                   </p>
                 </div>

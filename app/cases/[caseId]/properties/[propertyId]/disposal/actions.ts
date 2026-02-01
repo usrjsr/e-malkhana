@@ -1,23 +1,23 @@
-"use server"
+"use server";
 
-import dbConnect from "@/lib/db"
-import Property from "@/models/Property"
-import Disposal from "@/models/Disposal"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import dbConnect from "@/lib/db";
+import Property from "@/models/Property";
+import Disposal from "@/models/Disposal";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function disposeProperty(formData: {
-  propertyId: string
-  disposalType: string
-  courtOrderReference: string
-  disposalDate: string
-  remarks: string
+  propertyId: string;
+  disposalType: string;
+  courtOrderReference: string;
+  disposalDate: string;
+  remarks: string;
 }) {
-  const session = await getServerSession(authOptions)
+  const session = await getServerSession(authOptions);
   if (!session) {
-    throw new Error("Unauthorized")
+    throw new Error("Unauthorized");
   }
-  await dbConnect()
+  await dbConnect();
 
   const disposal = new Disposal({
     propertyId: formData.propertyId,
@@ -25,12 +25,12 @@ export async function disposeProperty(formData: {
     courtOrderReference: formData.courtOrderReference,
     disposalDate: new Date(formData.disposalDate),
     remarks: formData.remarks,
-    disposedAt: new Date()
-  })
+    disposedAt: new Date(),
+  });
 
-  await disposal.save()
+  await disposal.save();
 
-  await Property.findByIdAndUpdate(formData.propertyId, { status: "DISPOSED" })
+  await Property.findByIdAndUpdate(formData.propertyId, { status: "DISPOSED" });
 
-  return { success: true }
+  return { success: true };
 }

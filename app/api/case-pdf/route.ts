@@ -1,32 +1,32 @@
-import { NextRequest, NextResponse } from "next/server"
-import dbConnect from "@/lib/db"
-import Case from "@/models/Case"
-import Property from "@/models/Property"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { NextRequest, NextResponse } from "next/server";
+import dbConnect from "@/lib/db";
+import Case from "@/models/Case";
+import Property from "@/models/Property";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
     if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await dbConnect()
+    await dbConnect();
 
-    const { searchParams } = new URL(req.url)
-    const caseId = searchParams.get("caseId")
+    const { searchParams } = new URL(req.url);
+    const caseId = searchParams.get("caseId");
 
     if (!caseId) {
-      return NextResponse.json({ error: "Case ID required" }, { status: 400 })
+      return NextResponse.json({ error: "Case ID required" }, { status: 400 });
     }
 
-    const caseData = await Case.findById(caseId)
+    const caseData = await Case.findById(caseId);
     if (!caseData) {
-      return NextResponse.json({ error: "Case not found" }, { status: 404 })
+      return NextResponse.json({ error: "Case not found" }, { status: 404 });
     }
 
-    const properties = await Property.find({ caseId })
+    const properties = await Property.find({ caseId });
 
     // Generate PDF content as HTML
     const html = `
@@ -158,39 +158,41 @@ export async function GET(req: NextRequest) {
           <div class="detail-item">
             <div class="detail-label">Status</div>
             <div class="detail-value">
-              <span class="status ${caseData.status === 'PENDING' ? 'pending' : 'disposed'}">
+              <span class="status ${caseData.status === "PENDING" ? "pending" : "disposed"}">
                 ${caseData.status}
               </span>
             </div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Investigating Officer</div>
-            <div class="detail-value">${caseData.investigatingOfficer?.name || 'N/A'}</div>
+            <div class="detail-value">${caseData.investigatingOfficer?.name || "N/A"}</div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Officer ID</div>
-            <div class="detail-value">${caseData.investigatingOfficer?.officerId || 'N/A'}</div>
+            <div class="detail-value">${caseData.investigatingOfficer?.officerId || "N/A"}</div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Date of FIR</div>
-            <div class="detail-value">${caseData.dateOfFIR ? new Date(caseData.dateOfFIR).toLocaleDateString('en-IN') : 'N/A'}</div>
+            <div class="detail-value">${caseData.dateOfFIR ? new Date(caseData.dateOfFIR).toLocaleDateString("en-IN") : "N/A"}</div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Date of Seizure</div>
-            <div class="detail-value">${caseData.dateOfSeizure ? new Date(caseData.dateOfSeizure).toLocaleDateString('en-IN') : 'N/A'}</div>
+            <div class="detail-value">${caseData.dateOfSeizure ? new Date(caseData.dateOfSeizure).toLocaleDateString("en-IN") : "N/A"}</div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Act & Law</div>
-            <div class="detail-value">${caseData.actAndLaw || 'N/A'}</div>
+            <div class="detail-value">${caseData.actAndLaw || "N/A"}</div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Sections</div>
-            <div class="detail-value">${caseData.sections || 'N/A'}</div>
+            <div class="detail-value">${caseData.sections || "N/A"}</div>
           </div>
         </div>
       </div>
 
-      ${properties.length > 0 ? `
+      ${
+        properties.length > 0
+          ? `
       <div class="section">
         <div class="section-title">Seized Properties (${properties.length})</div>
         <table>
@@ -204,45 +206,51 @@ export async function GET(req: NextRequest) {
             </tr>
           </thead>
           <tbody>
-            ${properties.map((p: any) => `
+            ${properties
+              .map(
+                (p: any) => `
             <tr>
               <td>${p.category}</td>
               <td>${p.nature}</td>
               <td>${p.location}</td>
-              <td>${p.quantity} ${p.unit || 'units'}</td>
+              <td>${p.quantity} ${p.unit || "units"}</td>
               <td>
-                <span class="status ${p.status === 'PENDING' ? 'pending' : 'disposed'}">
+                <span class="status ${p.status === "PENDING" ? "pending" : "disposed"}">
                   ${p.status}
                 </span>
               </td>
             </tr>
-            `).join('')}
+            `,
+              )
+              .join("")}
           </tbody>
         </table>
       </div>
-      ` : ''}
+      `
+          : ""
+      }
 
       <div class="footer">
-        <p>Generated on: ${new Date().toLocaleString('en-IN')}</p>
+        <p>Generated on: ${new Date().toLocaleString("en-IN")}</p>
         <p>© 2025 Government of India. All rights reserved.</p>
         <p>e-Malkhana - Digital Evidence Management System</p>
       </div>
     </body>
     </html>
-    `
+    `;
 
     // Return HTML for browser to handle or convert to PDF
     return new NextResponse(html, {
       headers: {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Content-Disposition': `attachment; filename="Case_${caseData.crimeNumber}_${caseData.crimeYear}.html"`
-      }
-    })
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Disposition": `attachment; filename="Case_${caseData.crimeNumber}_${caseData.crimeYear}.html"`,
+      },
+    });
   } catch (error) {
-    console.error("PDF generation error:", error)
+    console.error("PDF generation error:", error);
     return NextResponse.json(
       { error: "Failed to generate case report" },
-      { status: 500 }
-    )
+      { status: 500 },
+    );
   }
 }

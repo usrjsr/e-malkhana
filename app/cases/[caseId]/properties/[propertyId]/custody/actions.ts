@@ -1,33 +1,33 @@
-"use server"
+"use server";
 
-import dbConnect from "@/lib/db"
-import CustodyLog from "@/models/CustodyLog"
-import Property from "@/models/Property"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import dbConnect from "@/lib/db";
+import CustodyLog from "@/models/CustodyLog";
+import Property from "@/models/Property";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function addCustodyLog(formData: {
-  propertyId: string
-  from: string
-  to: string
-  purpose: string
-  remarks: string
-  timestamp: string
+  propertyId: string;
+  from: string;
+  to: string;
+  purpose: string;
+  remarks: string;
+  timestamp: string;
 }) {
-  const session = await getServerSession(authOptions)
+  const session = await getServerSession(authOptions);
   if (!session) {
-    throw new Error("Unauthorized")
+    throw new Error("Unauthorized");
   }
 
-  await dbConnect()
+  await dbConnect();
 
-  const property = await Property.findById(formData.propertyId)
+  const property = await Property.findById(formData.propertyId);
   if (!property) {
-    throw new Error("Property not found")
+    throw new Error("Property not found");
   }
 
   if (property.status === "DISPOSED") {
-    throw new Error("Cannot add custody log to disposed property")
+    throw new Error("Cannot add custody log to disposed property");
   }
 
   const custody = new CustodyLog({
@@ -36,9 +36,9 @@ export async function addCustodyLog(formData: {
     to: formData.to,
     purpose: formData.purpose,
     remarks: formData.remarks,
-    timestamp: new Date(formData.timestamp)
-  })
+    timestamp: new Date(formData.timestamp),
+  });
 
-  await custody.save()
-  return { success: true }
+  await custody.save();
+  return { success: true };
 }

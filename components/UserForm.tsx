@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { createUser } from "@/app/users/new/actions"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createUser } from "@/app/users/new/actions";
 
 export default function UserForm() {
-  const router = useRouter()
+  const router = useRouter();
 
   const [form, setForm] = useState({
     username: "",
@@ -13,37 +13,41 @@ export default function UserForm() {
     confirmPassword: "",
     role: "USER",
     officerId: "",
-    policeStation: ""
-  })
+    policeStation: "",
+  });
 
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
-    setForm({ ...form, [e.target.name]: e.target.value })
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) {
+    setForm({ ...form, [e.target.name]: e.target.value });
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError("")
-    setIsLoading(true)
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     if (form.password.length < 8) {
-      setError("Password must be at least 8 characters long")
-      setIsLoading(false)
-      return
+      setError("Password must be at least 8 characters long");
+      setIsLoading(false);
+      return;
     }
 
     if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match")
-      setIsLoading(false)
-      return
+      setError("Passwords do not match");
+      setIsLoading(false);
+      return;
     }
 
     if (!/^[a-zA-Z0-9_]{3,20}$/.test(form.username)) {
-      setError("Username must be 3-20 characters and contain only letters, numbers, and underscores")
-      setIsLoading(false)
-      return
+      setError(
+        "Username must be 3-20 characters and contain only letters, numbers, and underscores",
+      );
+      setIsLoading(false);
+      return;
     }
 
     try {
@@ -52,12 +56,12 @@ export default function UserForm() {
         password: form.password,
         role: form.role,
         officerId: form.officerId,
-        policeStation: form.policeStation
-      })
-      router.replace("/dashboard")
+        policeStation: form.policeStation,
+      });
+      router.replace("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create user")
-      setIsLoading(false)
+      setError(err instanceof Error ? err.message : "Failed to create user");
+      setIsLoading(false);
     }
   }
 
@@ -65,13 +69,18 @@ export default function UserForm() {
     <form onSubmit={handleSubmit} className="bg-white border-2 border-gray-300">
       <div className="bg-[#1e3a8a] text-white px-6 py-4">
         <h3 className="text-xl font-bold">Create New User Account</h3>
-        <p className="text-sm text-blue-200 mt-1">All fields marked with * are mandatory</p>
+        <p className="text-sm text-blue-200 mt-1">
+          All fields marked with * are mandatory
+        </p>
       </div>
 
       <div className="p-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label
+              htmlFor="username"
+              className="block text-sm font-semibold text-gray-700 mb-2"
+            >
               Username *
             </label>
             <input
@@ -88,7 +97,10 @@ export default function UserForm() {
           </div>
 
           <div>
-            <label htmlFor="officerId" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label
+              htmlFor="officerId"
+              className="block text-sm font-semibold text-gray-700 mb-2"
+            >
               Officer ID *
             </label>
             <input
@@ -105,7 +117,10 @@ export default function UserForm() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label
+              htmlFor="password"
+              className="block text-sm font-semibold text-gray-700 mb-2"
+            >
               Password *
             </label>
             <input
@@ -122,7 +137,10 @@ export default function UserForm() {
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-semibold text-gray-700 mb-2"
+            >
               Confirm Password *
             </label>
             <input
@@ -139,7 +157,10 @@ export default function UserForm() {
           </div>
 
           <div>
-            <label htmlFor="policeStation" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label
+              htmlFor="policeStation"
+              className="block text-sm font-semibold text-gray-700 mb-2"
+            >
               Police Station *
             </label>
             <input
@@ -156,7 +177,10 @@ export default function UserForm() {
           </div>
 
           <div>
-            <label htmlFor="role" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label
+              htmlFor="role"
+              className="block text-sm font-semibold text-gray-700 mb-2"
+            >
               Role *
             </label>
             <select
@@ -177,8 +201,16 @@ export default function UserForm() {
         {error && (
           <div className="bg-[#f8d7da] border-l-4 border-[#dc3545] p-4">
             <div className="flex items-start">
-              <svg className="w-5 h-5 text-[#721c24] mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              <svg
+                className="w-5 h-5 text-[#721c24] mr-2 flex-shrink-0 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
               </svg>
               <p className="text-sm text-[#721c24] font-semibold">{error}</p>
             </div>
@@ -193,9 +225,25 @@ export default function UserForm() {
           >
             {isLoading ? (
               <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Creating User...
               </span>
@@ -214,5 +262,5 @@ export default function UserForm() {
         </div>
       </div>
     </form>
-  )
+  );
 }

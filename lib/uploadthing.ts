@@ -1,15 +1,15 @@
-import { createUploadthing, type FileRouter } from "uploadthing/next"
+import { createUploadthing, type FileRouter } from "uploadthing/next";
 
-const f = createUploadthing()
+const f = createUploadthing();
 
 export const uploadRouter = {
   propertyImage: f({
-    image: { maxFileSize: "4MB", maxFileCount: 1 }
+    image: { maxFileSize: "4MB", maxFileCount: 1 },
   }).onUploadComplete(async ({ file }) => {
     return {
-      url: file.url
-    }
-  })
-} satisfies FileRouter
+      url: file.url,
+    };
+  }),
+} satisfies FileRouter;
 
-export type UploadRouter = typeof uploadRouter
+export type UploadRouter = typeof uploadRouter;

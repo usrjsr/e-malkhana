@@ -1,32 +1,32 @@
-"use server"
+"use server";
 
-import dbConnect from "@/lib/db"
-import Case from "@/models/Case"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import dbConnect from "@/lib/db";
+import Case from "@/models/Case";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function createCase(formData: {
-  policeStationName: string
-  investigatingOfficerName: string
-  investigatingOfficerId: string
-  crimeNumber: string
-  crimeYear: string
-  dateOfFIR: string
-  dateOfSeizure: string
-  actAndLaw: string
-  sections: string
+  policeStationName: string;
+  investigatingOfficerName: string;
+  investigatingOfficerId: string;
+  crimeNumber: string;
+  crimeYear: string;
+  dateOfFIR: string;
+  dateOfSeizure: string;
+  actAndLaw: string;
+  sections: string;
 }) {
-  const session = await getServerSession(authOptions)
+  const session = await getServerSession(authOptions);
   if (!session) {
-    throw new Error("Unauthorized")
+    throw new Error("Unauthorized");
   }
-  await dbConnect()
+  await dbConnect();
 
   const newCase = new Case({
     policeStationName: formData.policeStationName,
     investigatingOfficer: {
       name: formData.investigatingOfficerName,
-      officerId: formData.investigatingOfficerId
+      officerId: formData.investigatingOfficerId,
     },
     crimeNumber: formData.crimeNumber,
     crimeYear: Number(formData.crimeYear),
@@ -34,9 +34,9 @@ export async function createCase(formData: {
     dateOfSeizure: new Date(formData.dateOfSeizure),
     actAndLaw: formData.actAndLaw,
     sections: formData.sections,
-    status: "PENDING"
-  })
+    status: "PENDING",
+  });
 
-  const savedCase = await newCase.save()
-  return { caseId: savedCase._id.toString() }
+  const savedCase = await newCase.save();
+  return { caseId: savedCase._id.toString() };
 }
