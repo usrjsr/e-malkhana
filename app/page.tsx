@@ -12,34 +12,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="bg-[#1e3a8a] text-white">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-                <div className="w-12 h-12 bg-[#1e3a8a] rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">EP</span>
-                </div>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">e-Malkhana</h1>
-                <p className="text-sm text-blue-200">
-                  Digital Evidence Management System
-                </p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-blue-200">Government of India</p>
-              <p className="text-xs text-blue-300">Ministry of Home Affairs</p>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="bg-[#ff9933] h-2"></div>
-      <div className="bg-white h-2"></div>
-      <div className="bg-[#138808] h-2"></div>
-
+    
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
@@ -170,42 +143,6 @@ export default async function Home() {
           </div>
         </div>
       </main>
-
-      <footer className="bg-[#1e3a8a] text-white mt-16">
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid md:grid-cols-3 gap-8 mb-6">
-            <div>
-              <h4 className="font-bold mb-3">About e-Malkhana</h4>
-              <p className="text-sm text-blue-200">
-                A digital initiative to modernize evidence management in police
-                stations across India.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-bold mb-3">Quick Links</h4>
-              <ul className="text-sm text-blue-200 space-y-2">
-                <li>User Manual</li>
-                <li>Help & Support</li>
-                <li>FAQs</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-3">Contact</h4>
-              <p className="text-sm text-blue-200">
-                For technical support:
-                <br />
-                Email: support@emalkhana.gov.in
-                <br />
-                Helpline: 1800-XXX-XXXX
-              </p>
-            </div>
-          </div>
-          <div className="border-t border-blue-700 pt-6 text-center text-sm text-blue-200">
-            <p>© 2025 Government of India. All rights reserved.</p>
-            <p className="mt-2">Last updated: January 31, 2026</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
