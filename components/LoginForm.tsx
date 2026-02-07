@@ -72,7 +72,7 @@ export default function LoginForm() {
                 htmlFor="username"
                 className="block text-sm font-bold text-gray-700 mb-2"
               >
-                Username / Officer ID (Enter admin)
+                Username / Officer ID
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -108,7 +108,7 @@ export default function LoginForm() {
                 htmlFor="password"
                 className="block text-sm font-bold text-gray-700 mb-2"
               >
-                Password (Enter admin123)
+                Password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
