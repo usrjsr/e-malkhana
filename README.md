@@ -1,36 +1,178 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🗄️ e-Malkhana – Digital Evidence Management System
 
-## Getting Started
+A full-stack web application that simulates a **real police e-Malkhana workflow** for managing seized properties and evidence.  
+Built as part of **NIT Jamshedpur Web Team Inductions 2k26**.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 📌 Problem Statement
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Digital e-Malkhana for Police Evidence Management**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The system digitizes the traditional Malkhana process used in police stations to manage seized property, ensuring:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Proper case registration  
+- Secure evidence tracking  
+- Chain of custody logging  
+- Disposal management  
+- Transparency & accountability  
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🚀 Features Implemented
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 🔐 Authentication & Authorization
+- Username & password based login
+- Role-based access:
+  - **ADMIN**
+  - **USER**
+- Secured using **NextAuth (Credentials Provider)**
+- **Username: admin**
+- **Password: admin123**
+- Role: ADMIN
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 📊 Dashboard
+- Total cases count
+- Pending cases
+- Disposed cases
+- Quick navigation to case management
+- Admin-only user management
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+### 📁 Case Management
+- Create new cases with:
+  - Police Station Name
+  - Investigating Officer Name & ID
+  - Crime Number & Year
+  - Date of FIR & Seizure
+  - Act & Law
+  - Sections of Law
+- View case summary and status
+- Search & filter cases by:
+  - Crime number
+  - Year
+  - Officer name
+  - Case status
+
+---
+
+### 📦 Property Management
+- Add one or more properties per case
+- Each property includes:
+  - Category
+  - Belonging To (Accused / Complainant / Unknown)
+  - Nature of Property
+  - Quantity & Unit
+  - Storage Location
+  - Description
+  - Image upload
+- **Automatic QR Code generation** per property
+- Property status tracking (In Custody / Disposed)
+
+---
+
+### 🔄 Chain of Custody (Part-II)
+- Tracks every movement of property:
+  - From Location / Officer
+  - To Location / Officer
+  - Purpose (Court, FSL, Storage, Analysis, Transfer)
+  - Date & Time
+  - Remarks
+- Chronological custody log for legal integrity
+
+---
+
+### 🗑️ Disposal of Property (Part-III)
+- Admin-only disposal workflow
+- Disposal types:
+  - Returned
+  - Destroyed
+  - Auctioned
+  - Court Custody
+- Captures:
+  - Court order reference
+  - Disposal date
+  - Remarks
+- Auto-updates property and case status
+
+---
+
+### 👥 User Management (Admin Only)
+- Create new users (Admin / User)
+- Assign officer details
+- Secure password storage (bcrypt)
+- Role-based access enforcement
+
+---
+
+### 🧾 Reports & QR Code
+- QR code scan to view property details
+- Printable QR page
+- Case & property details view
+- Ready for future PDF report extension
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **Next.js (App Router)**
+- React
+- Tailwind CSS
+
+### Backend
+- Next.js API Routes
+- **NextAuth (Credentials Provider)**
+- MongoDB + Mongoose
+
+### Utilities
+- bcryptjs (password hashing)
+- QR Code generation
+- UploadThing (image uploads)
+
+---
+
+## 📂 Project Structure (Simplified)
+
+app/
+├─ (auth)/
+│ └─ login/
+├─ dashboard/
+├─ cases/
+│ ├─ new/
+│ ├─ [caseId]/
+│ │ ├─ properties/
+│ │ │ ├─ new/
+│ │ │ ├─ [propertyId]/
+│ │ │ │ ├─ custody/
+│ │ │ │ ├─ disposal/
+│ │ │ │ └─ qr/
+├─ users/
+│ └─ new/
+├─ api/
+│ ├─ auth/
+│ ├─ cases/
+│ ├─ properties/
+│ ├─ custody/
+│ ├─ disposal/
+├─ components/
+├─ lib/
+└─ models/
+
+
+---
+
+## ⚙️ Environment Variables
+
+Create a `.env.local` file:
+
+```env
+MONGODB_URI=mongodb://localhost:27017/e-malkhana
+NEXTAUTH_SECRET=your_secret_key
+NEXTAUTH_URL=http://localhost:3000
+
+
