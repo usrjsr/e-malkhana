@@ -1,41 +1,46 @@
 "use server";
 
-import dbConnect from "@/lib/db";
-import Property from "@/models/Property";
+import { connectDB } from "@/lib/db";
+import { Property } from "@/models/Property";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import QRCode from "qrcode";
 
 export async function createProperty(data: {
   caseId: string;
   category: string;
   belongingTo: string;
-  nature: string;
+  natureOfProperty: string;
   quantity: string;
-  unit: string;
-  location: string;
+  units: string;
+  storageLocation: string;
   description: string;
-  seizureDate: string;
-  imageUrl: string;
+  itemImage: string;
 }) {
-  await dbConnect();
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+
+  await connectDB();
 
   const property = await Property.create({
     caseId: data.caseId,
     category: data.category,
     belongingTo: data.belongingTo,
-    nature: data.nature,
-    quantity: data.quantity,
-    location: data.location,
+    natureOfProperty: data.natureOfProperty,
+    quantity: Number(data.quantity),
+    units: data.units,
+    storageLocation: data.storageLocation,
     description: data.description,
-    imageUrl: data.imageUrl,
-    status: "IN_CUSTODY",
-    qrCodeData: "TEMP",
+    itemImage: data.itemImage,
+    seizingOfficer: (session.user as any).id,
   });
 
-  const qrUrl = `${process.env.NEXTAUTH_URL}/properties/${property._id}/qr`;
+  const qrData = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/properties/${property._id}/qr`;
+  const qrCode = await QRCode.toDataURL(qrData);
 
-  const qrCodeData = await QRCode.toDataURL(qrUrl);
-
-  property.qrCodeData = qrCodeData;
+  property.qrCode = qrCode;
   await property.save();
 
   return {

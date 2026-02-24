@@ -1,12 +1,14 @@
 "use server";
 
-import dbConnect from "@/lib/db";
-import User from "@/models/User";
+import { connectDB } from "@/lib/db";
+import { User } from "@/models/User";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 
 export async function createUser(formData: {
+  fullName: string;
+  email: string;
   username: string;
   password: string;
   role: string;
@@ -23,23 +25,30 @@ export async function createUser(formData: {
     throw new Error("Only admins can create users");
   }
 
-  await dbConnect();
+  await connectDB();
 
-  const existing = await User.findOne({ username: formData.username });
+  const existing = await User.findOne({
+    $or: [
+      { username: formData.username.toLowerCase() },
+      { email: formData.email.toLowerCase() },
+    ],
+  });
   if (existing) {
-    throw new Error("Username already exists");
+    throw new Error("Username or email already exists");
   }
 
-  const passwordHash = await bcrypt.hash(formData.password, 10);
+  const hashedPassword = await bcrypt.hash(formData.password, 10);
 
-  const newUser = new User({
-    username: formData.username,
-    passwordHash,
-    role: formData.role,
+  await User.create({
+    fullName: formData.fullName,
+    email: formData.email.toLowerCase(),
+    username: formData.username.toLowerCase(),
+    password: hashedPassword,
+    role: formData.role || "OFFICER",
     officerId: formData.officerId,
     policeStation: formData.policeStation,
+    status: "ACTIVE",
   });
 
-  await newUser.save();
   return { success: true };
 }

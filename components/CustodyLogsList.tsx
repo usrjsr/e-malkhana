@@ -29,14 +29,11 @@ export default function CustodyLogsList({ logs }: { logs: any[] }) {
     <div className="space-y-0">
       {logs.map((log, index) => (
         <div key={log._id} className="relative">
-          {/* Timeline Line */}
           {index !== logs.length - 1 && (
             <div className="absolute left-6 top-14 bottom-0 w-0.5 bg-gray-300"></div>
           )}
 
-          {/* Log Entry */}
           <div className="flex gap-4 pb-6">
-            {/* Timeline Dot */}
             <div className="flex-shrink-0">
               <div className="w-12 h-12 bg-[#1e3a8a] rounded-full flex items-center justify-center shadow-md relative z-10">
                 <svg
@@ -55,10 +52,8 @@ export default function CustodyLogsList({ logs }: { logs: any[] }) {
               </div>
             </div>
 
-            {/* Content Card */}
             <div className="flex-1">
               <div className="bg-white border-2 border-gray-200 rounded-lg p-5 hover:border-[#1e3a8a] hover:shadow-md transition-all duration-200">
-                {/* Header */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
@@ -78,14 +73,14 @@ export default function CustodyLogsList({ logs }: { logs: any[] }) {
                         {log.purpose}
                       </span>
                       <span className="text-sm text-gray-500">
-                        {new Date(log.timestamp).toLocaleDateString("en-IN", {
+                        {new Date(log.movementTimestamp).toLocaleDateString("en-IN", {
                           day: "2-digit",
                           month: "short",
                           year: "numeric",
                         })}
                       </span>
                       <span className="text-sm text-gray-500">
-                        {new Date(log.timestamp).toLocaleTimeString("en-IN", {
+                        {new Date(log.movementTimestamp).toLocaleTimeString("en-IN", {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
@@ -102,7 +97,7 @@ export default function CustodyLogsList({ logs }: { logs: any[] }) {
                         FROM
                       </p>
                       <p className="text-sm font-bold text-gray-900">
-                        {log.from}
+                        {log.fromOfficer} ({log.fromLocation})
                       </p>
                     </div>
 
@@ -125,7 +120,7 @@ export default function CustodyLogsList({ logs }: { logs: any[] }) {
                         TO
                       </p>
                       <p className="text-sm font-bold text-gray-900">
-                        {log.to}
+                        {log.toOfficer} ({log.toLocation})
                       </p>
                     </div>
                   </div>

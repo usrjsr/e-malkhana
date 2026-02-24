@@ -1,6 +1,6 @@
-import dbConnect from "@/lib/db"
-import Case from "@/models/Case"
-import Property from "@/models/Property"
+import { connectDB } from "@/lib/db"
+import { Case } from "@/models/Case"
+import { Property } from "@/models/Property"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
@@ -14,7 +14,7 @@ export default async function ReportsPage() {
     redirect("/login")
   }
 
-  await dbConnect()
+  await connectDB()
 
   const cases = await Case.find().sort({ createdAt: -1 })
   const properties = await Property.find()
@@ -26,7 +26,7 @@ export default async function ReportsPage() {
     return {
       ...caseItem.toObject(),
       totalProperties: caseProperties.length,
-      pendingProperties: caseProperties.filter((p: any) => p.status === "PENDING").length,
+      pendingProperties: caseProperties.filter((p: any) => p.status !== "DISPOSED").length,
       disposedProperties: caseProperties.filter((p: any) => p.status === "DISPOSED").length
     }
   })
@@ -112,7 +112,7 @@ export default async function ReportsPage() {
                     <td className="px-6 py-4 font-bold text-[#1e3a8a] print:px-3 print:py-2 print:text-xs">
                       {caseItem.crimeNumber}/{caseItem.crimeYear}
                     </td>
-                    <td className="px-6 py-4 text-gray-700 print:px-3 print:py-2 print:text-xs">{caseItem.policeStationName}</td>
+                    <td className="px-6 py-4 text-gray-700 print:px-3 print:py-2 print:text-xs">{caseItem.policeStation}</td>
                     <td className="px-6 py-4 text-gray-700 print:px-3 print:py-2 print:text-xs">{caseItem.crimeYear}</td>
                     <td className="px-6 py-4 text-center font-bold text-[#1e3a8a] print:px-3 print:py-2 print:text-xs">{caseItem.totalProperties}</td>
                     <td className="px-6 py-4 text-center font-bold text-[#ffc107] print:px-3 print:py-2 print:text-xs">{caseItem.pendingProperties}</td>

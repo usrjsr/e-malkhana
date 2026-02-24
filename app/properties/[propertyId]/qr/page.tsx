@@ -1,25 +1,26 @@
-import dbConnect from "@/lib/db"
-import Property from "@/models/Property"
+import { connectDB } from "@/lib/db"
+import { Property } from "@/models/Property"
 import { notFound } from "next/navigation"
 import QRPrintClient from "./qr-print-client"
 import Link from "next/link"
 
 type Props = {
   params: Promise<{
-    caseId: string
     propertyId: string
   }>
 }
 
 export default async function PropertyQRPage({ params }: Props) {
-  await dbConnect()
+  await connectDB()
 
-  const { propertyId, caseId } = await params
+  const { propertyId } = await params
 
   const property = await Property.findById(propertyId)
   if (!property) {
     notFound()
   }
+
+  const caseId = property.caseId?.toString() || ""
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
@@ -33,7 +34,7 @@ export default async function PropertyQRPage({ params }: Props) {
 
           <div className="border-4 border-[#1e3a8a] p-6 rounded-xl">
             <img
-              src={property.qrCodeData}
+              src={property.qrCode}
               alt="QR Code"
               className="w-64 h-64"
             />
@@ -43,8 +44,8 @@ export default async function PropertyQRPage({ params }: Props) {
             <h2 className="text-2xl font-bold text-[#1e3a8a]">Property Details</h2>
             <div className="space-y-1 text-lg">
               <p><strong>Category:</strong> {property.category}</p>
-              <p><strong>Nature:</strong> {property.nature}</p>
-              <p><strong>Location:</strong> {property.location}</p>
+              <p><strong>Nature:</strong> {property.natureOfProperty}</p>
+              <p><strong>Location:</strong> {property.storageLocation}</p>
               <p><strong>Status:</strong> {property.status}</p>
             </div>
           </div>
@@ -85,7 +86,7 @@ export default async function PropertyQRPage({ params }: Props) {
 
           <div className="bg-white border-4 border-[#1e3a8a] p-8 rounded-xl shadow-2xl">
             <img
-              src={property.qrCodeData}
+              src={property.qrCode}
               alt="QR Code"
               className="w-80 h-80"
             />
@@ -105,11 +106,11 @@ export default async function PropertyQRPage({ params }: Props) {
               </div>
               <div className="flex items-start gap-2">
                 <span className="font-semibold text-gray-600 min-w-24">Nature:</span>
-                <span className="font-medium">{property.nature}</span>
+                <span className="font-medium">{property.natureOfProperty}</span>
               </div>
               <div className="flex items-start gap-2">
                 <span className="font-semibold text-gray-600 min-w-24">Location:</span>
-                <span className="font-medium">{property.location}</span>
+                <span className="font-medium">{property.storageLocation}</span>
               </div>
               <div className="flex items-start gap-2">
                 <span className="font-semibold text-gray-600 min-w-24">Status:</span>

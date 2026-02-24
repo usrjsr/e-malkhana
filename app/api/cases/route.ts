@@ -1,92 +1,102 @@
-import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/db";
-import Case from "@/models/Case";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server"
+import {connectDB} from "@/lib/db"
+import { Case } from "@/models/Case"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions)
+
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  await dbConnect();
+  await connectDB()
 
-  const { searchParams } = new URL(req.url);
-  const query = searchParams.get("q")?.trim();
-  const statusFilter = searchParams.get("status");
+  const { searchParams } = new URL(req.url)
+  const q = searchParams.get("q")?.trim()
+  const status = searchParams.get("status")
 
-  const filter: any = {};
+  const filter: any = {}
 
-  if (query) {
-    const year = Number(query);
+  if (status && status !== "ALL") {
+    filter.status = status.toUpperCase()
+  }
 
+  if (q) {
+    const regex = new RegExp(q, "i")
     filter.$or = [
-      { crimeNumber: { $regex: query, $options: "i" } },
-      { policeStationName: { $regex: query, $options: "i" } },
-      { "investigatingOfficer.name": { $regex: query, $options: "i" } },
-      ...(isNaN(year) ? [] : [{ crimeYear: year }]),
-    ];
+      { crimeNumber: regex },
+      { caseNumber: regex },
+      { policeStation: regex },
+      { investigatingOfficerName: regex },
+      { investigatingOfficerId: regex },
+      { actAndLaw: regex },
+      { section: regex },
+    ]
+
+    const yearNum = Number(q)
+    if (!isNaN(yearNum)) {
+      filter.$or.push({ crimeYear: yearNum })
+    }
   }
 
-  if (statusFilter && statusFilter !== "ALL") {
-    filter.status = statusFilter;
-  }
+  const cases = await Case.find(filter).sort({ createdAt: -1 }).limit(100)
 
-  const cases = await Case.find(filter).sort({ createdAt: -1 }).limit(20);
-
-  return NextResponse.json(cases);
+  return NextResponse.json(cases)
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions)
+
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  await dbConnect();
+  await connectDB()
 
-  const body = await req.json();
+  const body = await req.json()
 
   const {
-    policeStationName,
-    investigatingOfficerName,
-    investigatingOfficerId,
     crimeNumber,
     crimeYear,
-    dateOfFIR,
-    dateOfSeizure,
+    policeStation,
+    stationAddress,
+    investigatingOfficerName,
+    investigatingOfficerId,
+    firDate,
+    seizureDate,
     actAndLaw,
-    sections,
-  } = body;
+    section,
+  } = body
 
   if (
-    !policeStationName ||
-    !investigatingOfficerName ||
-    !investigatingOfficerId ||
     !crimeNumber ||
     !crimeYear ||
-    !dateOfFIR ||
-    !dateOfSeizure ||
+    !policeStation ||
+    !investigatingOfficerName ||
+    !investigatingOfficerId ||
+    !firDate ||
+    !seizureDate ||
     !actAndLaw ||
-    !sections
+    !section
   ) {
-    return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid data" }, { status: 400 })
   }
 
   const newCase = await Case.create({
-    policeStationName,
-    investigatingOfficer: {
-      name: investigatingOfficerName,
-      officerId: investigatingOfficerId,
-    },
     crimeNumber,
     crimeYear,
-    dateOfFIR: new Date(dateOfFIR),
-    dateOfSeizure: new Date(dateOfSeizure),
+    policeStation,
+    stationAddress,
+    investigatingOfficerName,
+    investigatingOfficerId,
+    firDate: new Date(firDate),
+    seizureDate: new Date(seizureDate),
     actAndLaw,
-    sections,
-  });
+    section,
+    reportingOfficer: (session.user as any).id,
+  })
 
-  return NextResponse.json({ caseId: newCase._id });
+  return NextResponse.json({ caseId: newCase._id }, { status: 201 })
 }

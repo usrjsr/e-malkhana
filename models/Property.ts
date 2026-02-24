@@ -1,56 +1,113 @@
-import mongoose, { Schema, models, model } from "mongoose"
+import mongoose, { Schema, models, model } from "mongoose";
 
-const PropertySchema = new Schema(
+const propertySchema = new Schema(
   {
     caseId: {
       type: Schema.Types.ObjectId,
       ref: "Case",
-      required: true
+      required: true,
+      index: true,
     },
+
+    propertyTag: {
+      type: String,
+      trim: true,
+      index: true,
+    },
+
     category: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
     },
+
     belongingTo: {
       type: String,
       enum: ["ACCUSED", "COMPLAINANT", "UNKNOWN"],
-      required: true
+      default: "UNKNOWN",
+      set: (v: string) => v?.toUpperCase(),
     },
-    nature: {
+
+    natureOfProperty: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
     },
+
     quantity: {
-      type: String,
-      required: true
+      type: Number,
+      required: true,
+      min: 0,
     },
-    location: {
+
+    units: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
     },
+
     description: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
     },
-    imageUrl: {
+
+    storageLocation: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
     },
-    qrCodeData: {
+
+    serialNumber: {
       type: String,
-      required: true
+      trim: true,
     },
+
+    itemImage: {
+      type: String,
+      required: true,
+    },
+
+    qrCode: {
+      type: String,
+    },
+
     status: {
       type: String,
-      enum: ["IN_CUSTODY", "DISPOSED"],
-      default: "IN_CUSTODY"
-    }
+      enum: [
+        "SEIZED",
+        "IN_TRANSIT",
+        "IN_LAB",
+        "IN_COURT",
+        "DISPOSED",
+        "RELEASED",
+      ],
+      default: "SEIZED",
+      index: true,
+    },
+
+    seizingOfficer: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    lastMovementAt: {
+      type: Date,
+      default: Date.now,
+      index: true,
+    },
   },
-  {
-    timestamps: true
+  { timestamps: true }
+);
+
+propertySchema.index({ caseId: 1, serialNumber: 1 }, { sparse: true });
+
+propertySchema.pre("save", function () {
+  if (this.isNew && !this.propertyTag) {
+    const tail = this._id.toString().slice(-6).toUpperCase();
+    this.propertyTag = `PROP-${tail}`;
   }
-)
+});
 
-const Property = models.Property || model("Property", PropertySchema)
-
-export default Property
+export const Property = models.Property || model("Property", propertySchema);

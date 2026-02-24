@@ -1,6 +1,6 @@
-import dbConnect from "@/lib/db"
-import Property from "@/models/Property"
-import Case from "@/models/Case"
+import { connectDB } from "@/lib/db"
+import { Property } from "@/models/Property"
+import { Case } from "@/models/Case"
 import Link from "next/link"
 import { redirect, notFound } from "next/navigation"
 import { getServerSession } from "next-auth"
@@ -22,7 +22,7 @@ export default async function PropertyDetailPage({ params }: Props) {
 
   const { caseId, propertyId } = await params
 
-  await dbConnect()
+  await connectDB()
 
   const property = await Property.findById(propertyId)
   if (!property) {
@@ -41,12 +41,12 @@ export default async function PropertyDetailPage({ params }: Props) {
           <div>
             <h2 className="text-3xl font-bold text-[#1e3a8a]">Property Details</h2>
             <p className="text-gray-600 mt-1">
-              Case {caseData.crimeNumber}/{caseData.crimeYear} - {caseData.policeStationName}
+              Case {caseData.crimeNumber}/{caseData.crimeYear} - {caseData.policeStation}
             </p>
             <div className="mt-2">
-              <span className={`px-3 py-1 text-sm font-semibold ${property.status === "PENDING"
-                  ? "bg-[#ffc107] text-[#856404]"
-                  : "bg-[#28a745] text-white"
+              <span className={`px-3 py-1 text-sm font-semibold ${property.status === "DISPOSED"
+                  ? "bg-[#28a745] text-white"
+                  : "bg-[#ffc107] text-[#856404]"
                 }`}>
                 {property.status}
               </span>
@@ -80,24 +80,24 @@ export default async function PropertyDetailPage({ params }: Props) {
 
                 <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
                   <p className="text-sm font-semibold text-gray-600 mb-1">Nature of Property</p>
-                  <p className="text-lg font-bold text-[#1e3a8a]">{property.nature}</p>
+                  <p className="text-lg font-bold text-[#1e3a8a]">{property.natureOfProperty}</p>
                 </div>
 
                 <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
                   <p className="text-sm font-semibold text-gray-600 mb-1">Quantity</p>
                   <p className="text-lg font-bold text-[#1e3a8a]">
-                    {property.quantity} {property.unit || 'units'}
+                    {property.quantity} {property.units || 'units'}
                   </p>
                 </div>
 
                 <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
                   <p className="text-sm font-semibold text-gray-600 mb-1">Storage Location</p>
-                  <p className="text-lg font-bold text-[#1e3a8a]">{property.location}</p>
+                  <p className="text-lg font-bold text-[#1e3a8a]">{property.storageLocation}</p>
                 </div>
 
                 <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
                   <p className="text-sm font-semibold text-gray-600 mb-1">Current Status</p>
-                  <p className={`text-lg font-bold ${property.status === "PENDING" ? "text-[#ffc107]" : "text-[#28a745]"
+                  <p className={`text-lg font-bold ${property.status === "DISPOSED" ? "text-[#28a745]" : "text-[#ffc107]"
                     }`}>
                     {property.status}
                   </p>
@@ -111,11 +111,11 @@ export default async function PropertyDetailPage({ params }: Props) {
                 </div>
               )}
 
-              {property.seizureDate && (
+              {property.lastMovementAt && (
                 <div className="bg-[#f8f9fa] border-l-4 border-[#1e3a8a] p-4">
-                  <p className="text-sm font-semibold text-gray-600 mb-1">Date of Seizure</p>
+                  <p className="text-sm font-semibold text-gray-600 mb-1">Last Movement</p>
                   <p className="text-gray-900">
-                    {new Date(property.seizureDate).toLocaleDateString('en-IN')}
+                    {new Date(property.lastMovementAt).toLocaleDateString('en-IN')}
                   </p>
                 </div>
               )}
@@ -123,14 +123,14 @@ export default async function PropertyDetailPage({ params }: Props) {
           </div>
 
           <div className="space-y-6">
-            {property.imageUrl && (
+            {property.itemImage && (
               <div className="bg-white border-2 border-gray-300">
                 <div className="bg-[#1e3a8a] text-white px-6 py-4">
                   <h3 className="text-xl font-bold">Property Image</h3>
                 </div>
                 <div className="p-4">
                   <img
-                    src={property.imageUrl}
+                    src={property.itemImage}
                     alt="Property"
                     className="w-full border-2 border-gray-300 object-cover max-h-64"
                   />
@@ -138,14 +138,14 @@ export default async function PropertyDetailPage({ params }: Props) {
               </div>
             )}
 
-            {property.qrCodeData && (
+            {property.qrCode && (
               <div className="bg-white border-2 border-gray-300">
                 <div className="bg-[#1e3a8a] text-white px-6 py-4">
                   <h3 className="text-xl font-bold">QR Code</h3>
                 </div>
                 <div className="p-6 text-center space-y-4">
                   <img
-                    src={property.qrCodeData}
+                    src={property.qrCode}
                     alt="QR Code"
                     className="mx-auto border-2 border-gray-300 p-2 bg-white"
                   />
@@ -228,7 +228,7 @@ export default async function PropertyDetailPage({ params }: Props) {
           </div>
         )}
 
-        {property.status === "PENDING" && (
+        {property.status !== "DISPOSED" && (
           <div className="bg-[#fff3cd] border-l-4 border-[#ffc107] p-4">
             <div className="flex items-start">
               <svg className="w-6 h-6 text-[#856404] mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">

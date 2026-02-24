@@ -1,70 +1,85 @@
-import { NextAuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import dbConnect from "./db";
-import User from "@/models/User";
+import { NextAuthOptions } from "next-auth"
+import Credentials from "next-auth/providers/credentials"
+import bcrypt from "bcryptjs"
+
+import { connectDB } from "@/lib/db"
+import { User } from "@/models/User"
 
 export const authOptions: NextAuthOptions = {
+  session: {
+    strategy: "jwt",
+  },
+
   providers: [
-    CredentialsProvider({
-      name: "credentials",
+    Credentials({
+      name: "Credentials",
       credentials: {
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
+
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) {
-          return null;
+          throw new Error("Missing username or password")
         }
 
-        await dbConnect();
+        await connectDB()
 
         const user = await User.findOne({
-          $or: [
-            { username: credentials.username },
-            { officerId: credentials.username },
-          ],
-        });
+          username: credentials.username.toLowerCase(),
+        })
 
-        if (!user) return null;
+        if (!user) {
+          throw new Error("Invalid username or password")
+        }
+
+        if (user.status !== "ACTIVE") {
+          throw new Error("Account suspended")
+        }
 
         const isValid = await bcrypt.compare(
           credentials.password,
-          user.passwordHash,
-        );
+          user.password
+        )
 
-        if (!isValid) return null;
+        if (!isValid) {
+          throw new Error("Invalid username or password")
+        }
 
         return {
           id: user._id.toString(),
-          name: user.username,
-          email: user.officerId,
+          username: user.username,
           role: user.role,
-        };
+          name: user.fullName,
+          email: user.email,
+        }
       },
     }),
   ],
-  pages: {
-    signIn: "/login",
-  },
-  session: {
-    strategy: "jwt",
-  },
+
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.role = (user as any).role;
+        token.role = user.role
+        token.username = user.username
+        token.id = user.id
       }
-      return token;
+      return token
     },
+
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
-        (session.user as any).role = token.role;
+        session.user.role = token.role as string
+        session.user.username = token.username as string
+        session.user.id = token.id as string
       }
-      return session;
+      return session
     },
   },
+
+  pages: {
+    signIn: "/login",
+  },
+
   secret: process.env.NEXTAUTH_SECRET,
-};
+}

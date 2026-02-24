@@ -1,38 +1,86 @@
-import mongoose, { Schema, models, model } from "mongoose"
+import mongoose, { Schema, models, model } from "mongoose";
 
 const CustodyLogSchema = new Schema(
   {
     propertyId: {
       type: Schema.Types.ObjectId,
       ref: "Property",
-      required: true
+      required: true,
+      index: true,
     },
-    from: {
+
+    fromOfficer: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
     },
-    to: {
+
+    toOfficer: {
       type: String,
-      required: true
+      trim: true,
     },
+
+    fromLocation: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    toLocation: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     purpose: {
       type: String,
-      required: true
+      enum: [
+        "COURT",
+        "FSL",
+        "ANALYSIS",
+        "STORAGE",
+        "DISPOSAL",
+        "RELEASE",
+        "TRANSFER",
+      ],
+      required: true,
+      set: (v: string) => v?.toUpperCase(),
     },
+
+    action: {
+      type: String,
+      enum: ["MOVED", "RECEIVED", "DISPOSED", "RELEASED"],
+      required: true,
+      set: (v: string) => v?.toUpperCase(),
+    },
+
     remarks: {
       type: String,
-      required: true
+      trim: true,
     },
-    timestamp: {
+
+    handler: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+
+    blockchainHash: {
+      type: String,
+      trim: true,
+    },
+
+    movementTimestamp: {
       type: Date,
-      required: true
-    }
+      default: Date.now,
+      index: true,
+    },
   },
   {
-    timestamps: false
-  }
-)
+    timestamps: true,
+  },
+);
 
-const CustodyLog = models.CustodyLog || model("CustodyLog", CustodyLogSchema)
-
-export default CustodyLog
+export const CustodyLog =
+  models.CustodyLog || model("CustodyLog", CustodyLogSchema);

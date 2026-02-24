@@ -1,24 +1,33 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI as string;
+const MONGODB_URI = process.env.MONGODB_URI!;
 
 if (!MONGODB_URI) {
-  throw new Error("MONGODB_URI not defined");
+  throw new Error("Please define MONGODB_URI in .env.local");
 }
 
-let cached = (global as any).mongoose;
+type Cached = {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+};
 
-if (!cached) {
-  cached = (global as any).mongoose = { conn: null, promise: null };
+declare global {
+  var mongooseCache: Cached | undefined;
 }
 
-async function dbConnect() {
-  if (cached.conn) {
-    return cached.conn;
-  }
+const cached: Cached = global.mongooseCache || {
+  conn: null,
+  promise: null,
+};
+
+global.mongooseCache = cached;
+
+export async function connectDB() {
+  if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
     cached.promise = mongoose.connect(MONGODB_URI, {
+      dbName: "case-management",
       bufferCommands: false,
     });
   }
@@ -26,5 +35,3 @@ async function dbConnect() {
   cached.conn = await cached.promise;
   return cached.conn;
 }
-
-export default dbConnect;

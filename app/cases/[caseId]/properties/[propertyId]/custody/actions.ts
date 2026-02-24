@@ -1,25 +1,28 @@
 "use server";
 
-import dbConnect from "@/lib/db";
-import CustodyLog from "@/models/CustodyLog";
-import Property from "@/models/Property";
+import { connectDB } from "@/lib/db";
+import { CustodyLog } from "@/models/CustodyLog";
+import { Property } from "@/models/Property";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 export async function addCustodyLog(formData: {
   propertyId: string;
-  from: string;
-  to: string;
+  fromOfficer: string;
+  toOfficer: string;
+  fromLocation: string;
+  toLocation: string;
   purpose: string;
+  action: string;
   remarks: string;
-  timestamp: string;
+  movementTimestamp: string;
 }) {
   const session = await getServerSession(authOptions);
   if (!session) {
     throw new Error("Unauthorized");
   }
 
-  await dbConnect();
+  await connectDB();
 
   const property = await Property.findById(formData.propertyId);
   if (!property) {
@@ -30,15 +33,28 @@ export async function addCustodyLog(formData: {
     throw new Error("Cannot add custody log to disposed property");
   }
 
-  const custody = new CustodyLog({
+  await CustodyLog.create({
     propertyId: formData.propertyId,
-    from: formData.from,
-    to: formData.to,
+    fromOfficer: formData.fromOfficer,
+    toOfficer: formData.toOfficer,
+    fromLocation: formData.fromLocation,
+    toLocation: formData.toLocation,
     purpose: formData.purpose,
+    action: formData.action,
     remarks: formData.remarks,
-    timestamp: new Date(formData.timestamp),
+    handler: (session.user as any).id,
+    movementTimestamp: formData.movementTimestamp
+      ? new Date(formData.movementTimestamp)
+      : new Date(),
   });
 
-  await custody.save();
+  if (formData.action === "MOVED") {
+    property.status = "IN_TRANSIT";
+  } else if (formData.action === "RECEIVED") {
+    property.status = "SEIZED";
+  }
+  property.lastMovementAt = new Date();
+  await property.save();
+
   return { success: true };
 }

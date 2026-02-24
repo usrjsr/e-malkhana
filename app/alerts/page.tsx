@@ -1,5 +1,5 @@
-import dbConnect from "@/lib/db"
-import Case from "@/models/Case"
+import { connectDB } from "@/lib/db"
+import { Case } from "@/models/Case"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
@@ -12,7 +12,7 @@ export default async function AlertsPage() {
     redirect("/login")
   }
 
-  await dbConnect()
+  await connectDB()
 
   const now = new Date()
   const threshold = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
@@ -97,7 +97,7 @@ export default async function AlertsPage() {
         {cases.length > 0 && (
           <div className="mb-8 bg-[#f8d7da] border-l-4 border-[#dc3545] p-5 rounded-lg shadow-md">
             <div className="flex items-start">
-              <svg className="w-7 h-7 text-[#721c24] mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-7 h-7 text-[#721c24] mr-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
               <div>
@@ -163,15 +163,15 @@ export default async function AlertsPage() {
                             <svg className="w-4 h-4 text-[#1e3a8a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                             </svg>
-                            <span>{c.policeStationName}</span>
+                            <span>{c.policeStation}</span>
                           </div>
 
-                          {c.investigatingOfficer?.name && (
+                          {c.investigatingOfficerName && (
                             <div className="flex items-center gap-2">
                               <svg className="w-4 h-4 text-[#1e3a8a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                               </svg>
-                              <span>IO: {c.investigatingOfficer.name}</span>
+                              <span>IO: {c.investigatingOfficerName}</span>
                             </div>
                           )}
 
@@ -189,21 +189,21 @@ export default async function AlertsPage() {
                             <span>Created: {new Date(c.createdAt).toLocaleDateString('en-IN')}</span>
                           </div>
 
-                          {c.dateOfFIR && (
+                          {c.firDate && (
                             <div className="flex items-center gap-2">
                               <svg className="w-4 h-4 text-[#1e3a8a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                               </svg>
-                              <span>FIR: {new Date(c.dateOfFIR).toLocaleDateString('en-IN')}</span>
+                              <span>FIR: {new Date(c.firDate).toLocaleDateString('en-IN')}</span>
                             </div>
                           )}
 
-                          {c.properties && c.properties.length > 0 && (
+                          {c.section && (
                             <div className="flex items-center gap-2">
                               <svg className="w-4 h-4 text-[#1e3a8a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                               </svg>
-                              <span>{c.properties.length} Properties</span>
+                              <span>Section: {c.section}</span>
                             </div>
                           )}
                         </div>
@@ -243,7 +243,7 @@ export default async function AlertsPage() {
                         </div>
                       </div>
 
-                      <svg className="w-6 h-6 text-gray-400 flex-shrink-0 ml-4 group-hover:text-[#1e3a8a] group-hover:translate-x-1 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 text-gray-400 shrink-0 ml-4 group-hover:text-[#1e3a8a] group-hover:translate-x-1 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>

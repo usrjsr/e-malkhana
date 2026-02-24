@@ -1,64 +1,91 @@
-import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/db";
-import Property from "@/models/Property";
-import Case from "@/models/Case";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import QRCode from "qrcode";
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import QRCode from "qrcode"
 
-export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+import { connectDB } from "@/lib/db"
+import { Property } from "@/models/Property"
+import { Case } from "@/models/Case"
+import { authOptions } from "@/lib/auth"
+
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  await dbConnect();
+  await connectDB()
 
-  const body = await req.json();
+  const { searchParams } = new URL(req.url)
+  const caseId = searchParams.get("caseId")
+
+  if (!caseId) {
+    return NextResponse.json({ error: "caseId is required" }, { status: 400 })
+  }
+
+  const properties = await Property.find({ caseId }).sort({ createdAt: -1 })
+
+  return NextResponse.json(properties)
+}
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  await connectDB()
+
+  const body = await req.json()
 
   const {
     caseId,
     category,
     belongingTo,
-    nature,
+    natureOfProperty,
     quantity,
-    location,
+    units,
+    storageLocation,
     description,
-    imageUrl,
-  } = body;
+    itemImage,
+  } = body
 
   if (
     !caseId ||
     !category ||
     !belongingTo ||
-    !nature ||
+    !natureOfProperty ||
     !quantity ||
-    !location ||
+    !units ||
+    !storageLocation ||
     !description ||
-    !imageUrl
+    !itemImage
   ) {
-    return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid data" }, { status: 400 })
   }
 
-  const caseExists = await Case.findById(caseId);
+  const caseExists = await Case.findById(caseId)
   if (!caseExists) {
-    return NextResponse.json({ error: "Case not found" }, { status: 404 });
+    return NextResponse.json({ error: "Case not found" }, { status: 404 })
   }
 
-  const qrData = `PROPERTY:${caseId}:${Date.now()}`;
-  const qrCodeData = await QRCode.toDataURL(qrData);
+  const qrData = `PROPERTY:${caseId}:${Date.now()}`
+  const qrCode = await QRCode.toDataURL(qrData)
 
   const property = await Property.create({
     caseId,
     category,
     belongingTo,
-    nature,
+    natureOfProperty,
     quantity,
-    location,
+    units,
+    storageLocation,
     description,
-    imageUrl,
-    qrCodeData,
-  });
+    itemImage,
+    qrCode,
+    seizingOfficer: session.user.id,
+  })
 
-  return NextResponse.json({ propertyId: property._id });
+  return NextResponse.json({ propertyId: property._id }, { status: 201 })
 }

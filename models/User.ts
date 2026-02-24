@@ -5,24 +5,58 @@ const UserSchema = new Schema(
     username: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
+      lowercase: true,
+      trim: true,
+      index: true
     },
-    passwordHash: {
+
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true
+    },
+
+    fullName: {
+      type: String,
+      required: true,
+      trim: true,
+      index: true
+    },
+
+    password: {
       type: String,
       required: true
     },
+
     role: {
       type: String,
-      enum: ["ADMIN", "USER"],
-      required: true
+      enum: ["ADMIN", "OFFICER", "CLERK"],
+      default: "OFFICER",
+      index: true
     },
+
     officerId: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
+      index: true
     },
+
     policeStation: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
+      index: true
+    },
+
+    status: {
+      type: String,
+      enum: ["ACTIVE", "SUSPENDED"],
+      default: "ACTIVE",
+      index: true
     }
   },
   {
@@ -30,6 +64,4 @@ const UserSchema = new Schema(
   }
 )
 
-const User = models.User || model("User", UserSchema)
-
-export default User
+export const User = models.User || model("User", UserSchema)

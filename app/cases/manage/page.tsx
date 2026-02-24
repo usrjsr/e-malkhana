@@ -1,6 +1,6 @@
-import dbConnect from "@/lib/db"
-import Case from "@/models/Case"
-import Property from "@/models/Property"
+import {connectDB} from "@/lib/db"
+import {Case} from "@/models/Case"
+import {Property} from "@/models/Property"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
@@ -14,7 +14,7 @@ export default async function ManageCasesPage() {
     redirect("/login")
   }
 
-  await dbConnect()
+  await connectDB()
 
   const cases = await Case.find().sort({ createdAt: -1 })
   const properties = await Property.find()
@@ -26,7 +26,7 @@ export default async function ManageCasesPage() {
     return {
       ...caseItem.toObject(),
       totalProperties: caseProperties.length,
-      pendingProperties: caseProperties.filter((p: any) => p.status === "PENDING").length,
+      pendingProperties: caseProperties.filter((p: any) => p.status !== "DISPOSED").length,
       disposedProperties: caseProperties.filter((p: any) => p.status === "DISPOSED").length
     }
   })

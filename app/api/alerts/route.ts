@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
-import dbConnect from "@/lib/db"
-import Case from "@/models/Case"
+import { connectDB } from "@/lib/db"
+import { Case } from "@/models/Case"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 
 export async function GET(req: NextRequest) {
-  await dbConnect()
+  await connectDB()
 
   const session = await getServerSession(authOptions)
   if (!session) {

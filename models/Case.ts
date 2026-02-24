@@ -1,56 +1,100 @@
 import mongoose, { Schema, models, model } from "mongoose"
 
-const CaseSchema = new Schema(
+const caseSchema = new Schema(
   {
-    policeStationName: {
+    caseNumber: {
       type: String,
-      required: true
-    },
-    investigatingOfficer: {
-      name: {
-        type: String,
-        required: true
-      },
-      officerId: {
-        type: String,
-        required: true
-      }
+      unique: true,
+      trim: true,
+      uppercase: true,
     },
     crimeNumber: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
+      uppercase: true,
     },
     crimeYear: {
       type: Number,
-      required: true
+      required: true,
     },
-    dateOfFIR: {
-      type: Date,
-      required: true
+    policeStation: {
+      type: String,
+      required: true,
+      trim: true,
+      uppercase: true,
     },
-    dateOfSeizure: {
+    stationAddress: {
+      type: String,
+      trim: true,
+    },
+    investigatingOfficerName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    investigatingOfficerId: {
+      type: String,
+      required: true,
+      trim: true,
+      uppercase: true,
+    },
+    firDate: {
       type: Date,
-      required: true
+      required: true,
+    },
+    seizureDate: {
+      type: Date,
+      required: true,
     },
     actAndLaw: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
+      uppercase: true,
     },
-    sections: {
+    section: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
+      uppercase: true,
     },
     status: {
       type: String,
-      enum: ["PENDING", "DISPOSED"],
-      default: "PENDING"
-    }
+      enum: ["PENDING", "UNDER_INVESTIGATION", "IN_COURT", "DISPOSED"],
+      default: "PENDING",
+      index: true,
+      uppercase: true,
+    },
+    statusUpdatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    disposalNarrative: {
+      type: String,
+      trim: true,
+    },
+    reportingOfficer: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
-)
+);
 
-const Case = models.Case || model("Case", CaseSchema)
+caseSchema.index({ crimeNumber: 1, crimeYear: 1 }, { unique: true });
 
-export default Case
+caseSchema.pre("validate", function () {
+  if (!this.caseNumber && this.crimeNumber && this.crimeYear) {
+    this.caseNumber = `${this.crimeNumber}/${this.crimeYear}`.toUpperCase();
+  }
+
+  if (this.isModified("status")) {
+    this.statusUpdatedAt = new Date();
+  }
+});
+
+export const Case = models.Case || model("Case", caseSchema);
